@@ -1,0 +1,1 @@
+Details of changes: - Add enhanced content extraction for webpages - Implement basic spidering functionality (0-3 depth) - Extract rich metadata including title, author, keywords, social links - Improve content targeting for different types of websites - Add real search testing with test_real_search.py - Fix parameter handling in duckduckgo_get_details function
