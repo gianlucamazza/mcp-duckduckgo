@@ -1,0 +1,1 @@
+This commit finalizes the integration of content extraction and spidering capabilities in the DuckDuckGo search plugin. It also moves the test_real_search.py file to the tests directory for better organization. Additional changes include improvements to the models.py file for better type handling and updates to the integration tests.
