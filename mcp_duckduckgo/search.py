@@ -229,17 +229,17 @@ async def duckduckgo_search(params: Dict[str, Any], ctx: Context) -> Dict[str, A
         logger.error(f"HTTP error occurred: {e}")
         if hasattr(ctx, 'error'):
             await ctx.error(f"HTTP error: {str(e)}")
-        raise ValueError(f"HTTP error: {str(e)}")
+        raise ValueError(f"HTTP error: {str(e)}") from e
     except httpx.RequestError as e:
         logger.error(f"Request error occurred: {e}")
         if hasattr(ctx, 'error'):
             await ctx.error(f"Request error: {str(e)}")
-        raise ValueError(f"Request error: {str(e)}")
+        raise ValueError(f"Request error: {str(e)}") from e
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
         if hasattr(ctx, 'error'):
             await ctx.error(f"Unexpected error: {str(e)}")
-        raise ValueError(f"Unexpected error: {str(e)}")
+        raise ValueError(f"Unexpected error: {str(e)}") from e
     finally:
         # Close the HTTP client if we created it
         if close_client and http_client:

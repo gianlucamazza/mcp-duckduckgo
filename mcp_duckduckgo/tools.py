@@ -4,14 +4,14 @@ MCP tool definitions for the DuckDuckGo search plugin.
 
 import logging
 import traceback
-from typing import List, Dict, Any, Optional
+from typing import List, Optional, Dict, Any
 import urllib.parse
 from pydantic import Field
 from mcp.server.fastmcp import Context
 import httpx
 from bs4 import BeautifulSoup
 
-from .models import SearchResponse, SearchResult, DetailedResult
+from .models import SearchResponse, SearchResult, DetailedResult, LinkedContent
 from .search import duckduckgo_search, extract_domain
 from .server import mcp
 
@@ -72,7 +72,7 @@ async def duckduckgo_web_search(  # vulture: ignore
         # Enhance query with site limitation if provided
         if site:
             # Check if site is a string before using it
-            if isinstance(site, str) and not "site:" in query:
+            if isinstance(site, str) and "site:" not in query:
                 query = f"{query} site:{site}"
         
         # Enhance query with time period if provided
@@ -437,9 +437,9 @@ async def duckduckgo_related_searches(  # vulture: ignore
 
 # Helper functions for metadata and content extraction
 
-def extract_metadata(soup, domain, url):
+def extract_metadata(soup: BeautifulSoup, domain: str, url: str) -> Dict[str, Any]:
     """Extract metadata from a web page."""
-    metadata = {
+    metadata: Dict[str, Any] = {
         "description": "",
         "published_date": None,
         "is_official": False
@@ -493,27 +493,27 @@ def extract_metadata(soup, domain, url):
     
     return metadata
 
-def extract_author(soup):
+def extract_author(soup: BeautifulSoup) -> Optional[str]:
     """Extract author information from a web page."""
     # Try common author meta tags
     for author_meta in ["author", "article:author", "dc.creator", "twitter:creator"]:
         author_tag = soup.find("meta", attrs={"name": author_meta}) or soup.find("meta", attrs={"property": author_meta})
         if author_tag and author_tag.get("content"):
-            return author_tag["content"].strip()
+            return str(author_tag["content"]).strip()
     
     # Try looking for author in structured data
     author_elem = soup.find(["span", "div", "a"], attrs={"class": ["author", "byline"]})
     if author_elem:
-        return author_elem.get_text(strip=True)
+        return str(author_elem.get_text(strip=True))
     
     # Try looking for an author in rel="author" links
     author_link = soup.find("a", attrs={"rel": "author"})
     if author_link:
-        return author_link.get_text(strip=True)
+        return str(author_link.get_text(strip=True))
     
     return None
 
-def extract_keywords(soup):
+def extract_keywords(soup: BeautifulSoup) -> Optional[List[str]]:
     """Extract keywords or tags from a web page."""
     keywords = []
     
@@ -541,22 +541,22 @@ def extract_keywords(soup):
     
     return keywords if keywords else None
 
-def extract_main_image(soup, base_url):
+def extract_main_image(soup: BeautifulSoup, base_url: str) -> Optional[str]:
     """Extract the main image from a web page."""
     # Try Open Graph image
     og_image = soup.find("meta", attrs={"property": "og:image"})
     if og_image and og_image.get("content"):
-        return og_image["content"]
+        return str(og_image["content"])
     
     # Try Twitter image
     twitter_image = soup.find("meta", attrs={"name": "twitter:image"})
     if twitter_image and twitter_image.get("content"):
-        return twitter_image["content"]
+        return str(twitter_image["content"])
     
     # Try schema.org image
     schema_image = soup.find("meta", attrs={"itemprop": "image"})
     if schema_image and schema_image.get("content"):
-        return schema_image["content"]
+        return str(schema_image["content"])
     
     # Try to find a likely main image - large image at the top of the article
     article = soup.find(["article", "main", "div"], attrs={"class": ["article", "post", "content"]})
@@ -575,7 +575,7 @@ def extract_main_image(soup, base_url):
                         parsed_url = urllib.parse.urlparse(base_url)
                         base_domain = f"{parsed_url.scheme}://{parsed_url.netloc}"
                         img_src = base_domain + img_src
-                    return img_src
+                    return str(img_src)
     
     # If we still don't have an image, just take the first substantive image
     images = soup.find_all("img")
@@ -587,13 +587,13 @@ def extract_main_image(soup, base_url):
                 parsed_url = urllib.parse.urlparse(base_url)
                 base_domain = f"{parsed_url.scheme}://{parsed_url.netloc}"
                 img_src = base_domain + img_src
-            return img_src
+            return str(img_src)
     
     return None
 
-def extract_social_links(soup):
+def extract_social_links(soup: BeautifulSoup) -> Optional[Dict[str, str]]:
     """Extract social media links from a web page."""
-    social_links = {}
+    social_links: Dict[str, str] = {}
     social_platforms = {
         "twitter.com": "twitter",
         "facebook.com": "facebook",
@@ -617,7 +617,7 @@ def extract_social_links(soup):
     
     return social_links if social_links else None
 
-def extract_targeted_content(soup, domain):
+def extract_targeted_content(soup: BeautifulSoup, domain: str) -> tuple[str, List[str]]:
     """
     Extract content more intelligently based on content type/domain.
     Returns both the content snippet and headings.
@@ -733,7 +733,7 @@ def extract_targeted_content(soup, domain):
     
     return content_snippet, headings[:10]  # Limit to 10 headings
 
-def extract_related_links(soup, base_url, domain, same_domain_only=True):
+def extract_related_links(soup: BeautifulSoup, base_url: str, domain: str, same_domain_only: bool = True) -> List[str]:
     """Extract related links from a web page."""
     related_links = []
     seen_urls = set()
@@ -773,13 +773,11 @@ def extract_related_links(soup, base_url, domain, same_domain_only=True):
     
     return related_links
 
-async def spider_links(links, http_client, original_domain, depth, max_links_per_page, same_domain_only, ctx):
+async def spider_links(links: List[str], http_client: httpx.AsyncClient, original_domain: str, depth: int, max_links_per_page: int, same_domain_only: bool, ctx: Context) -> List[LinkedContent]:
     """
     Spider the provided links to gather more content.
     Returns a list of LinkedContent objects.
     """
-    from mcp_duckduckgo.models import LinkedContent
-    
     if depth <= 0 or not links:
         return []
     

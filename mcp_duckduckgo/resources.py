@@ -2,9 +2,9 @@
 MCP resource definitions for the DuckDuckGo search plugin.
 """
 
-from mcp.server.fastmcp import Context
 import httpx
 from bs4 import BeautifulSoup
+from typing import Any
 
 from .server import mcp
 
@@ -60,7 +60,7 @@ async def get_search_results(query: str) -> str:  # vulture: ignore
         Formatted search results as text
     """
     # Create a simple search function that doesn't require the context
-    async def simple_search(query: str, count: int = 5):
+    async def simple_search(query: str, count: int = 5) -> dict[str, Any]:
         url = "https://lite.duckduckgo.com/lite/"
         
         async with httpx.AsyncClient(

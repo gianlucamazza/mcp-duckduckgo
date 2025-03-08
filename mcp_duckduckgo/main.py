@@ -27,7 +27,7 @@ def initialize_mcp() -> Any:
     
     return mcp
 
-def main():
+def main() -> None:
     """Run the MCP server."""
     try:
         # Initialize MCP
