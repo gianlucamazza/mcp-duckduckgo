@@ -2,6 +2,7 @@
 
 A DuckDuckGo search plugin for Model Context Protocol (MCP), compatible with Claude Code. Provides web search functionality with advanced navigation and content exploration features.
 
+[![smithery badge](https://smithery.ai/badge/@gianlucamazza/mcp-duckduckgo)](https://smithery.ai/server/@gianlucamazza/mcp-duckduckgo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub](https://img.shields.io/github/stars/gianlucamazza/mcp-duckduckgo?style=social)](https://github.com/gianlucamazza/mcp-duckduckgo)
 
@@ -33,6 +34,14 @@ This project implements a Model Context Protocol (MCP) server that provides web 
 - Python packages listed in `pyproject.toml`
 
 ## Installation
+
+### Installing via Smithery
+
+To install DuckDuckGo Search Plugin for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@gianlucamazza/mcp-duckduckgo):
+
+```bash
+npx -y @smithery/cli install @gianlucamazza/mcp-duckduckgo --client claude
+```
 
 ### From PyPI
 
