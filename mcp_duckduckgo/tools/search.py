@@ -257,7 +257,11 @@ async def duckduckgo_get_details(
             soup = BeautifulSoup(html_text, "html.parser")
 
             # Extract title
-            title = soup.title.string.strip() if soup.title and soup.title.string else "No title"
+            title = (
+                soup.title.string.strip()
+                if soup.title and soup.title.string
+                else "No title"
+            )
 
             # Extract metadata
             metadata = extract_metadata(soup, domain, url)
