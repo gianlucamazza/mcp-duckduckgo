@@ -33,7 +33,19 @@ jobs:
     - name: Run comprehensive security scan
       run: |
         # Run all security tools with SARIF output where possible
-        bandit -r mcp_duckduckgo/ -c pyproject.toml -f sarif -o bandit.sarif || echo '{"runs": [{"tool": {"driver": {"name": "bandit"}}, "results": []}]}' > bandit.sarif
+        bandit -r mcp_duckduckgo/ -c pyproject.toml -f sarif -o bandit.sarif || echo '{
+          "version": "2.1.0",
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "runs": [{
+            "tool": {
+              "driver": {
+                "name": "bandit",
+                "version": "1.0.0"
+              }
+            },
+            "results": []
+          }]
+        }' > bandit.sarif
         bandit -r mcp_duckduckgo/ -c pyproject.toml
         
         safety check --json --output safety.json || echo '{}' > safety.json
@@ -42,7 +54,19 @@ jobs:
         pip-audit --format=json --output=pip-audit.json || echo '{}' > pip-audit.json
         pip-audit
         
-        semgrep --config=auto --sarif --output=semgrep.sarif mcp_duckduckgo/ || echo '{"runs": [{"tool": {"driver": {"name": "semgrep"}}, "results": []}]}' > semgrep.sarif
+        semgrep --config=auto --sarif --output=semgrep.sarif mcp_duckduckgo/ || echo '{
+          "version": "2.1.0",
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "runs": [{
+            "tool": {
+              "driver": {
+                "name": "semgrep",
+                "version": "1.0.0"
+              }
+            },
+            "results": []
+          }]
+        }' > semgrep.sarif
         semgrep --config=auto mcp_duckduckgo/
 
     - name: Upload Bandit SARIF

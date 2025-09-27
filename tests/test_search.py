@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from mcp_duckduckgo import search as search_module
 from mcp_duckduckgo.http import get_http_client
 from mcp_duckduckgo.intent import detect_query_intent
+from mcp_duckduckgo.exceptions import SearchError
 from mcp_duckduckgo.search import (
     DuckDuckGoSearchError,
     duckduckgo_search,
@@ -230,7 +231,7 @@ class TestDuckDuckGoSearch:
         """Test that an error is raised when query parameter is missing."""
         # Run the search function without a query
         search_params = {}
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(SearchError) as excinfo:
             await duckduckgo_search(search_params, mock_context)
 
         assert "Query parameter is required" in str(excinfo.value)
