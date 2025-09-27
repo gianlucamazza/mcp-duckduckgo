@@ -1,0 +1,5 @@
+# Act configuration for local workflow testing
+--platform ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
+--container-architecture linux/amd64
+--artifact-server-path /tmp/act-artifacts
+--use-gitignore

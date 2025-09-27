@@ -1,7 +1,5 @@
 """Centralized configuration for the DuckDuckGo MCP plugin."""
 
-from typing import Dict
-
 # Default timeout settings
 DEFAULT_TIMEOUT = 10.0
 REQUEST_TIMEOUT = 15.0
@@ -13,14 +11,14 @@ MAX_QUERY_LENGTH = 400
 MAX_QUERY_WORDS = 50
 
 # Cache TTL settings by intent (in seconds)
-CACHE_TTL_MAPPING: Dict[str, int] = {
-    "news": 900,      # 15 minutes for news
+CACHE_TTL_MAPPING: dict[str, int] = {
+    "news": 900,  # 15 minutes for news
     "general": 3600,  # 1 hour for general queries
     "technical": 86400,  # 24 hours for technical docs
-    "shopping": 3600,   # 1 hour for shopping
+    "shopping": 3600,  # 1 hour for shopping
     "academic": 86400,  # 24 hours for academic content
-    "finance": 1800,    # 30 minutes for finance
-    "local": 3600,      # 1 hour for local searches
+    "finance": 1800,  # 30 minutes for finance
+    "local": 3600,  # 1 hour for local searches
 }
 
 # User agent for HTTP requests

@@ -73,6 +73,8 @@ mcp-duckduckgo = "mcp_duckduckgo.main:main"
 target-version = "py310"
 line-length = 88
 fix = true
+show-fixes = true
+respect-gitignore = true
 
 [tool.ruff.lint]
 select = [
@@ -84,16 +86,24 @@ select = [
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
     "RUF", # ruff-specific rules
+    "N",   # pep8-naming
+    "S",   # flake8-bandit (security)
+    "PTH", # flake8-use-pathlib
 ]
 ignore = [
-    "E501",  # line too long, handled by black
+    "E501",  # line too long, handled by formatter
     "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "C901",  # too complex (let complexity be natural)
+    "S101",  # use of assert (common in tests)
+    "S603",  # subprocess call (we need this for some utilities)
+    "S607",  # partial executable path (false positives)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-"tests/*" = ["F401", "F811"]
+"__init__.py" = ["F401", "F403", "N807"]  # Allow star imports and dunder methods in __init__
+"tests/*" = ["F401", "F811", "S101", "PLR2004"]  # Test-specific ignores
+"**/conftest.py" = ["F401", "F403"]  # pytest fixtures
+"mcp_duckduckgo/exceptions.py" = ["N818"]  # Exception naming flexibility
 
 [tool.ruff.format]
 quote-style = "double"

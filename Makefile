@@ -110,6 +110,16 @@ audit:  ## Run comprehensive security audit
 dead-code:  ## Find unused code with vulture
 	vulture mcp_duckduckgo/ --min-confidence 60
 
+ruff-fix:  ## Fix all auto-fixable Ruff issues
+	ruff check . --fix
+	ruff format .
+
+ci-local:  ## Run local CI simulation with act
+	act pull_request -j test --matrix python-version:3.12
+
+ci-local-all:  ## Run all local CI jobs with act
+	act pull_request -W .github/workflows/ci.yml
+
 # Full static analysis
 analyze: lint type-check security dead-code audit  ## Run complete static analysis
 

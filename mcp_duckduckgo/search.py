@@ -14,10 +14,10 @@ import httpx
 from bs4 import BeautifulSoup
 from mcp.server.fastmcp import Context
 
-from .http import get_http_client
-from .rerank import rerank_results
 from .exceptions import SearchError, ValidationError
+from .http import get_http_client
 from .models import SearchIntent
+from .rerank import rerank_results
 from .semantic_cache import semantic_cache
 
 # Configure logging

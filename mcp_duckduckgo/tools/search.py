@@ -9,13 +9,12 @@ from typing import Any, cast
 import httpx
 from bs4 import BeautifulSoup
 from mcp.server.fastmcp import Context
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from ..context_utils import MinimalContext
 from ..enrichment import build_knowledge_graph
 from ..intent import detect_query_intent
-from ..context_utils import MinimalContext
-from ..models import SearchIntent
-from ..models import DetailedResult, SearchResponse, SearchResult
+from ..models import DetailedResult, SearchIntent, SearchResponse, SearchResult
 from ..sandbox.snapshots import snapshot_store
 from ..search import DuckDuckGoSearchError, duckduckgo_search, extract_domain
 from ..server import mcp

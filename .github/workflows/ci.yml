@@ -32,8 +32,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e ".[test,dev]"
 
-    - name: Run ruff linting
+    - name: Run ruff linting and formatting
       run: |
+        # Auto-fix where possible, then verify clean state
+        ruff check . --fix --output-format=github
+        ruff format .
+        
+        # Check if ruff made any changes
+        if [[ -n $(git diff --name-only) ]]; then
+          echo "::error::Ruff made formatting changes - please run 'ruff check . --fix && ruff format .' locally and commit"
+          git diff --name-only
+          exit 1
+        fi
+        
+        # Final verification that everything is clean
         ruff check . --output-format=github
         ruff format --check .
 

@@ -29,9 +29,9 @@ from .typing_utils import is_tag, safe_get_attr, safe_get_text
 
 __all__ = [
     "DEFAULT_TIMEOUT",
+    "MAX_RESULTS_PER_REQUEST",
     "DetailedResult",
     "LinkedContent",
-    "MAX_RESULTS_PER_REQUEST",
     "MinimalContext",
     "SearchResponse",
     "SearchResult",
