@@ -5,6 +5,7 @@ Data models for the DuckDuckGo search plugin.
 from __future__ import annotations
 
 from typing import Any, Literal
+
 from pydantic import BaseModel, Field
 
 # Type aliases for better type safety
@@ -18,7 +19,9 @@ SearchIntent = Literal[
     "local",
     "general",
 ]
-ValidationResult = Literal["Likely True", "Possibly True", "Inconclusive", "Possibly False", "Likely False"]
+ValidationResult = Literal[
+    "Likely True", "Possibly True", "Inconclusive", "Possibly False", "Likely False"
+]
 SentimentType = Literal["supporting", "contradicting", "neutral"]
 
 
@@ -115,7 +118,7 @@ class DetailedResult(BaseModel):
 
 class ValidationSource(BaseModel):
     """Source used for fact validation."""
-    
+
     url: str
     title: str
     description: str
@@ -124,7 +127,7 @@ class ValidationSource(BaseModel):
 
 class FactCheckResult(BaseModel):
     """Result of a fact checking operation."""
-    
+
     statement: str
     validation_result: ValidationResult
     confidence_score: int = Field(ge=-100, le=100)
@@ -136,7 +139,7 @@ class FactCheckResult(BaseModel):
 
 class SummaryResult(BaseModel):
     """Result of a webpage summarization."""
-    
+
     url: str
     title: str
     summary: str

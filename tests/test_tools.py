@@ -10,8 +10,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from mcp_duckduckgo.models import DetailedResult, SearchResponse
-from mcp_duckduckgo.search import DuckDuckGoSearchError
 from mcp_duckduckgo.sandbox.snapshots import snapshot_store
+from mcp_duckduckgo.search import DuckDuckGoSearchError
 
 # Import the tools module containing the MCP tools
 from mcp_duckduckgo.tools import (
@@ -49,7 +49,10 @@ async def test_duckduckgo_web_search(mock_context, mock_search_function):
         first_result = result.results[0]
         assert first_result.title == "Example Page 1"
         assert first_result.url == "https://example.com/page1"
-        assert first_result.description == "This is a policy announcement description for Example Page 1"
+        assert (
+            first_result.description
+            == "This is a policy announcement description for Example Page 1"
+        )
         # Domain is included in result dict but not as a property in SearchResult model
         # assert first_result.domain == "example.com"
 
@@ -171,7 +174,9 @@ async def test_duckduckgo_web_search_error_handling(mock_context):
 async def test_duckduckgo_get_details(mock_context, mock_http_client):
     """Test the duckduckgo_get_details tool."""
 
-    with patch("mcp_duckduckgo.tools.search.httpx.AsyncClient", return_value=mock_http_client):
+    with patch(
+        "mcp_duckduckgo.tools.search.httpx.AsyncClient", return_value=mock_http_client
+    ):
         url = "https://example.gov/page"
         mock_context.progress = AsyncMock()
         result = await duckduckgo_get_details(
@@ -193,7 +198,10 @@ async def test_duckduckgo_get_details(mock_context, mock_http_client):
         "https://example.gov/press-release",
         "https://example.gov/resources",
     ]
-    assert result.social_links and result.social_links.get("twitter") == "https://twitter.com/example"
+    assert (
+        result.social_links
+        and result.social_links.get("twitter") == "https://twitter.com/example"
+    )
     assert result.structured_data and "json_ld" in result.structured_data
     assert result.entities and "Official" in result.entities
     assert result.knowledge_graph is not None
@@ -207,7 +215,9 @@ async def test_duckduckgo_get_details_with_snapshot(mock_context, mock_http_clie
 
     snapshot_store.clear()
 
-    with patch("mcp_duckduckgo.tools.search.httpx.AsyncClient", return_value=mock_http_client):
+    with patch(
+        "mcp_duckduckgo.tools.search.httpx.AsyncClient", return_value=mock_http_client
+    ):
         url = "https://example.gov/page"
         await duckduckgo_get_details(
             url=url,
@@ -297,4 +307,4 @@ async def test_summarize_webpage_streams_progress(mock_context):
 
     assert mock_context.progress.await_count >= 3
     mock_context.report_progress.assert_awaited()
-    assert "summary" in result and result["summary"]
+    assert result.get("summary")

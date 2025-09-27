@@ -23,7 +23,9 @@ async def test_plan_enforces_dependencies():
 
 @pytest.mark.asyncio
 async def test_orchestrator_executes_in_order():
-    async def search_tool(*, ctx: Any, state: dict[str, Any], **_: Any) -> dict[str, str]:
+    async def search_tool(
+        *, ctx: Any, state: dict[str, Any], **_: Any
+    ) -> dict[str, str]:
         state["search"] = True
         return {"results": ["item"]}
 
@@ -31,7 +33,9 @@ async def test_orchestrator_executes_in_order():
         assert "search" in dependencies
         return {"detail": dependencies["search"]["results"][0]}
 
-    orchestrator = MultiHopOrchestrator({"search": search_tool, "details": details_tool})
+    orchestrator = MultiHopOrchestrator(
+        {"search": search_tool, "details": details_tool}
+    )
     plan = MultiHopPlan(
         [
             Hop(name="search", tool="search", params={}),

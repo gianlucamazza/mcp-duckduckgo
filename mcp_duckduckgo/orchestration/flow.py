@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import inspect
+from collections.abc import Awaitable, Callable, Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Iterable, List, Mapping
+from typing import Any
 
 from mcp.server.fastmcp import Context
-
 
 ToolCallable = Callable[..., Awaitable[Any]]
 
@@ -60,7 +60,7 @@ class MultiHopPlan:
         self._ordered = self._topological_sort(hop_list)
 
     @staticmethod
-    def _topological_sort(hops: List[Hop]) -> List[Hop]:
+    def _topological_sort(hops: list[Hop]) -> list[Hop]:
         pending = {hop.name: hop for hop in hops}
         resolved: set[str] = set()
         order: list[Hop] = []
@@ -78,7 +78,7 @@ class MultiHopPlan:
 
         return order
 
-    def ordered_hops(self) -> List[Hop]:
+    def ordered_hops(self) -> list[Hop]:
         return list(self._ordered)
 
 
@@ -101,9 +101,7 @@ class MultiHopOrchestrator:
 
         for hop in plan.ordered_hops():
             tool_callable = self._resolve_tool(hop.tool)
-            dependency_outputs = {
-                name: results[name].output for name in hop.depends_on
-            }
+            dependency_outputs = {name: results[name].output for name in hop.depends_on}
 
             invocation_params = self._build_invocation_params(
                 tool_callable,

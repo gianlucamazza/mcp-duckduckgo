@@ -5,15 +5,15 @@ Summarization tools for the DuckDuckGo search plugin.
 import logging
 import re
 import traceback
-from typing import Any, Dict
+from typing import Any
 
 from bs4 import BeautifulSoup
 from mcp.server.fastmcp import Context
 from pydantic import Field
 
+from ..http import get_http_client
 from ..search import extract_domain
 from ..server import mcp
-from ..http import get_http_client
 
 # Import helper functions from the utils module
 from .utils import extract_targeted_content

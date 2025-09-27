@@ -11,7 +11,11 @@ from bs4 import BeautifulSoup
 from mcp_duckduckgo import search as search_module
 from mcp_duckduckgo.http import get_http_client
 from mcp_duckduckgo.intent import detect_query_intent
-from mcp_duckduckgo.search import DuckDuckGoSearchError, duckduckgo_search, extract_domain
+from mcp_duckduckgo.search import (
+    DuckDuckGoSearchError,
+    duckduckgo_search,
+    extract_domain,
+)
 
 
 class TestExtractDomain:
@@ -283,10 +287,11 @@ class TestDuckDuckGoSearch:
     ):
         mock_context.lifespan_context["http_client"] = mock_http_client
 
-        with patch("mcp_duckduckgo.search.BeautifulSoup", side_effect=RuntimeError("parse")):
+        with patch(
+            "mcp_duckduckgo.search.BeautifulSoup", side_effect=RuntimeError("parse")
+        ):
             with pytest.raises(search_module.DuckDuckGoSearchError):
                 await duckduckgo_search({"query": "trigger"}, mock_context)
-
 
     def test_internal_helper_functions(self, mock_context):
         node = Mock()
@@ -331,7 +336,9 @@ class TestDuckDuckGoSearch:
         assert confidence > 0
 
     @pytest.mark.asyncio
-    async def test_rerank_results_prioritises_overlap(self, mock_context, mock_http_client):
+    async def test_rerank_results_prioritises_overlap(
+        self, mock_context, mock_http_client
+    ):
         mock_context.lifespan_context["http_client"] = mock_http_client
 
         search_params = {"query": "policy announcement", "count": 5}

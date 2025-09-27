@@ -4,7 +4,7 @@ Search tools for the DuckDuckGo search plugin.
 
 import logging
 import traceback
-from typing import cast, Optional, List
+from typing import cast
 
 import httpx
 from bs4 import BeautifulSoup

@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 from .models import KnowledgeGraph, KnowledgeGraphEdge, KnowledgeGraphNode
-
 
 logger = logging.getLogger("mcp_duckduckgo.knowledge_graph")
 

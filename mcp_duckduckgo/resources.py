@@ -17,13 +17,13 @@ def get_search_docs() -> str:  # vulture: ignore
     """
     return """
     # DuckDuckGo Search API
-    
+
     This MCP server provides a web search capability using DuckDuckGo.
-    
+
     ## Usage
-    
+
     Use the `duckduckgo_web_search` tool to search the web:
-    
+
     ```python
     result = await duckduckgo_web_search(
         query="your search query",
@@ -31,20 +31,20 @@ def get_search_docs() -> str:  # vulture: ignore
         offset=0   # For pagination
     )
     ```
-    
+
     ## Response Format
-    
+
     The search returns a structured response with:
-    
+
     - `results`: List of search results, each containing:
       - `title`: The title of the result
       - `url`: The URL of the result
       - `description`: A snippet or description of the result
       - `published_date`: Publication date if available
     - `total_results`: Total number of results found
-    
+
     ## Limitations
-    
+
     - Maximum query length is 400 characters or 50 words
     - Results are limited to 20 per request
     - This is a simplified implementation using DuckDuckGo Lite

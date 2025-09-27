@@ -5,7 +5,6 @@ Location-based search tools for the DuckDuckGo search plugin.
 import logging
 import traceback
 
-from typing import Optional
 from mcp.server.fastmcp import Context
 from pydantic import Field
 

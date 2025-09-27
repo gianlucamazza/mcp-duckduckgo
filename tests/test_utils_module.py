@@ -2,18 +2,20 @@
 
 from __future__ import annotations
 
-from bs4 import BeautifulSoup, NavigableString
 from builtins import ExceptionGroup
 from unittest.mock import AsyncMock, patch
+
 import pytest
+from bs4 import BeautifulSoup, NavigableString
 
 from mcp_duckduckgo.exceptions import (
+    DuckDuckGoError,
     ErrorCollector,
     ErrorResult,
-    DuckDuckGoError,
     handle_multiple_errors,
 )
 from mcp_duckduckgo.tools.utils import (
+    _extract_generic_content,
     extract_author,
     extract_entities,
     extract_keywords,
@@ -23,7 +25,6 @@ from mcp_duckduckgo.tools.utils import (
     extract_social_links,
     extract_structured_data,
     extract_targeted_content,
-    _extract_generic_content,
     spider_links,
 )
 from mcp_duckduckgo.typing_utils import (
@@ -47,7 +48,11 @@ def test_extract_metadata_flags_official(utils_soup: BeautifulSoup) -> None:
     assert metadata["is_official"] is True
 
     structured = extract_structured_data(utils_soup)
-    assert "meta" in structured and structured["meta"]["description"] == "This page describes official procedures."
+    assert (
+        "meta" in structured
+        and structured["meta"]["description"]
+        == "This page describes official procedures."
+    )
 
 
 def test_extract_structured_data_json_ld(detail_soup: BeautifulSoup) -> None:
@@ -163,10 +168,12 @@ def test_error_handling_utilities() -> None:
     assert as_dict["details"] == {"query": "test"}
 
     with pytest.raises(ValueError):
-        handle_multiple_errors([ValueError("single" )], context="single test")
+        handle_multiple_errors([ValueError("single")], context="single test")
 
     with pytest.raises(ExceptionGroup) as exc_info:
-        handle_multiple_errors([ValueError("first"), RuntimeError("second")], context="multi")
+        handle_multiple_errors(
+            [ValueError("first"), RuntimeError("second")], context="multi"
+        )
     exceptions = exc_info.value.exceptions
     assert len(exceptions) == 2
 

@@ -9,8 +9,8 @@ import logging
 import os
 
 import httpx
-from pydantic import BaseModel
 import pytest
+from pydantic import BaseModel
 
 from mcp_duckduckgo.search import duckduckgo_search
 from mcp_duckduckgo.tools import (

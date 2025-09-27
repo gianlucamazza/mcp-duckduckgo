@@ -7,7 +7,7 @@ These functions provide common functionality used by multiple tools.
 import json
 import logging
 import urllib.parse
-from typing import Any, Optional, Tuple, List, Dict
+from typing import Any
 
 import httpx
 from bs4 import BeautifulSoup
@@ -16,10 +16,10 @@ from mcp.server.fastmcp import Context
 from ..models import LinkedContent
 from ..search import extract_domain
 from ..typing_utils import (
+    ensure_string,
+    safe_find_all,
     safe_get_attr,
     safe_get_text,
-    safe_find_all,
-    ensure_string,
     safe_href_extract,
 )
 
@@ -41,7 +41,7 @@ def extract_metadata(soup: BeautifulSoup, domain: str, url: str) -> dict[str, An
         content = safe_get_attr(meta_desc, "content")
         if content:
             metadata["description"] = ensure_string(content).strip()
-    
+
     if not metadata["description"]:
         # Try Open Graph description
         og_desc = soup.find("meta", attrs={"property": "og:description"})
@@ -49,7 +49,7 @@ def extract_metadata(soup: BeautifulSoup, domain: str, url: str) -> dict[str, An
             content = safe_get_attr(og_desc, "content")
             if content:
                 metadata["description"] = ensure_string(content).strip()
-    
+
     if not metadata["description"]:
         # Try to find the first substantive paragraph
         paragraphs = soup.find_all("p")
@@ -100,7 +100,9 @@ def extract_metadata(soup: BeautifulSoup, domain: str, url: str) -> dict[str, An
             metadata["is_official"] = True
     # 3. Check for verification badges or verified text
     if not metadata["is_official"]:
-        verified_elements = soup.find_all(string=lambda text: text and "verified" in str(text).lower())
+        verified_elements = soup.find_all(
+            string=lambda text: text and "verified" in str(text).lower()
+        )
         if verified_elements:
             metadata["is_official"] = True
 
@@ -201,14 +203,14 @@ def extract_main_image(soup: BeautifulSoup, base_url: str) -> str | None:
             if src:
                 width_attr = safe_get_attr(img, "width")
                 height_attr = safe_get_attr(img, "height")
-                
+
                 # Try to parse width/height if they exist
                 try:
                     width = int(width_attr) if width_attr else 0
                     height = int(height_attr) if height_attr else 0
                 except (ValueError, TypeError):
                     width = height = 0
-                    
+
                 if width > 300 or height > 200:  # Reasonable size for a main image
                     img_src = ensure_string(src)
                     # Handle relative URLs
@@ -281,14 +283,20 @@ def extract_targeted_content(soup: BeautifulSoup, domain: str) -> tuple[str, lis
 
     # Use modern pattern matching for site-specific extraction
     content_parts = []
-    
+
     # Determine site type using modern pattern matching
     site_type = None
     if "wikipedia.org" in domain:
         site_type = "wikipedia"
-    elif any(docs_site in domain for docs_site in ["docs.", ".docs.", "documentation.", "developer."]):
+    elif any(
+        docs_site in domain
+        for docs_site in ["docs.", ".docs.", "documentation.", "developer."]
+    ):
         site_type = "documentation"
-    elif any(news_site in domain for news_site in ["news.", "blog.", "article.", ".com/news", ".com/blog"]):
+    elif any(
+        news_site in domain
+        for news_site in ["news.", "blog.", "article.", ".com/news", ".com/blog"]
+    ):
         site_type = "news_blog"
     else:
         site_type = "generic"
@@ -304,7 +312,7 @@ def extract_targeted_content(soup: BeautifulSoup, domain: str) -> tuple[str, lis
                     p_text = safe_get_text(p, strip=True)
                     if p_text:
                         content_parts.append(p_text)
-                        
+
         case "documentation":
             # For documentation, focus on the main content area and code samples
             main_content = soup.find(
@@ -316,15 +324,16 @@ def extract_targeted_content(soup: BeautifulSoup, domain: str) -> tuple[str, lis
                 for elem in safe_find_all(main_content, ["p", "pre", "code"])[:10]:
                     elem_text = safe_get_text(elem, strip=True)
                     if elem_text:
-                        if hasattr(elem, 'name') and elem.name in ["pre", "code"]:
+                        if hasattr(elem, "name") and elem.name in ["pre", "code"]:
                             content_parts.append(f"Code: {elem_text}")
                         else:
                             content_parts.append(elem_text)
-                            
+
         case "news_blog":
             # For news sites, focus on paragraphs within the article container
             article_container = soup.find(
-                ["article", "div"], attrs={"class": ["article", "post", "entry", "content"]}
+                ["article", "div"],
+                attrs={"class": ["article", "post", "entry", "content"]},
             )
             if article_container:
                 paragraphs = safe_find_all(article_container, "p")
@@ -332,11 +341,11 @@ def extract_targeted_content(soup: BeautifulSoup, domain: str) -> tuple[str, lis
                     p_text = safe_get_text(p, strip=True)
                     if p_text and len(p_text) > 20:  # Skip very short paragraphs
                         content_parts.append(p_text)
-                        
+
         case _:  # generic or unknown site type
             # Try common content containers
             _extract_generic_content(soup, content_parts)
-    
+
     content_snippet = " ".join(content_parts)
 
     # If we haven't found suitable content yet, try common content containers
@@ -395,9 +404,7 @@ def _extract_generic_content(soup: BeautifulSoup, content_parts: list[str]) -> N
     """Extract generic content from common containers."""
     # Try common content containers by ID
     for container_id in ["content", "main", "article", "post", "entry"]:
-        content_div = soup.find(
-            ["div", "article", "main"], attrs={"id": container_id}
-        )
+        content_div = soup.find(["div", "article", "main"], attrs={"id": container_id})
         if content_div:
             paragraphs = safe_find_all(content_div, "p")
             for p in paragraphs[:10]:

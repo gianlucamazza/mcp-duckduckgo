@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import logging
-from typing import Iterable, Sequence
+from collections.abc import Sequence
 
 from .knowledge_graph import link_entities
 from .models import KnowledgeGraph
-
 
 logger = logging.getLogger("mcp_duckduckgo.enrichment")
 

@@ -4,7 +4,7 @@ Validation tools for the DuckDuckGo search plugin.
 
 import logging
 import traceback
-from typing import Any, Dict, List
+from typing import Any
 
 from mcp.server.fastmcp import Context
 from pydantic import Field

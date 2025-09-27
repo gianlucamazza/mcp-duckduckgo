@@ -21,7 +21,9 @@ def test_local_entity_index_contains_known_entities():
 
 @pytest.mark.asyncio
 async def test_link_entities_handles_unknown_and_deduplicates():
-    graph = await link_entities(["Unknown Entity", "Unknown Entity"], domain="Example.com")
+    graph = await link_entities(
+        ["Unknown Entity", "Unknown Entity"], domain="Example.com"
+    )
     assert graph is not None
     ids = {node.id for node in graph.nodes}
     assert any(identifier.startswith("E:") for identifier in ids)

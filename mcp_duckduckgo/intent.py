@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
-from typing import Iterable
-
+from collections.abc import Iterable
 
 _INTENT_KEYWORDS: dict[str, set[str]] = {
     "news": {
@@ -109,6 +108,12 @@ def detect_query_intent(query: str) -> tuple[str, float]:
     if not scores:
         return "general", 0.0
 
-    best_intent = max(scores.items(), key=lambda item: (item[1], -_INTENT_ORDER.index(item[0]) if item[0] in _INTENT_ORDER else 0))[0]
+    best_intent = max(
+        scores.items(),
+        key=lambda item: (
+            item[1],
+            -_INTENT_ORDER.index(item[0]) if item[0] in _INTENT_ORDER else 0,
+        ),
+    )[0]
     confidence = min(1.0, scores[best_intent] / 4.0)
     return best_intent, round(confidence, 2)

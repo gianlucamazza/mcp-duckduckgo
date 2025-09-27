@@ -11,7 +11,6 @@ from typing import Any
 
 from .models import SearchIntent
 
-
 INTENT_TTL_SECONDS: dict[SearchIntent, int] = {
     "news": 15 * 60,
     "technical": 24 * 60 * 60,
@@ -47,7 +46,7 @@ class SemanticCache:
     """A bounded LRU cache keyed by semantic query fingerprints."""
 
     def __init__(self, max_entries: int = 256) -> None:
-        self._store: "OrderedDict[str, CacheEntry]" = OrderedDict()
+        self._store: OrderedDict[str, CacheEntry] = OrderedDict()
         self._max_entries = max_entries
 
     @staticmethod
@@ -150,8 +149,8 @@ semantic_cache = SemanticCache()
 
 
 __all__ = [
-    "semantic_cache",
-    "SemanticCache",
-    "CacheLookup",
     "CacheEntry",
+    "CacheLookup",
+    "SemanticCache",
+    "semantic_cache",
 ]

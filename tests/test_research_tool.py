@@ -6,7 +6,13 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mcp_duckduckgo.models import DetailedResult, KnowledgeGraph, KnowledgeGraphEdge, KnowledgeGraphNode, SummaryResult
+from mcp_duckduckgo.models import (
+    DetailedResult,
+    KnowledgeGraph,
+    KnowledgeGraphEdge,
+    KnowledgeGraphNode,
+    SummaryResult,
+)
 from mcp_duckduckgo.sandbox.snapshots import snapshot_store
 from mcp_duckduckgo.tools.research import duckduckgo_multi_hop_research
 
@@ -35,11 +41,18 @@ async def test_multi_hop_research_workflow(mock_context):
 
     knowledge_graph = KnowledgeGraph(
         nodes=[
-            KnowledgeGraphNode(id="domain:example.com", label="example.com", source="duckduckgo", score=1.0),
+            KnowledgeGraphNode(
+                id="domain:example.com",
+                label="example.com",
+                source="duckduckgo",
+                score=1.0,
+            ),
             KnowledgeGraphNode(id="Q1", label="Example", source="wikidata", score=0.9),
         ],
         edges=[
-            KnowledgeGraphEdge(source="domain:example.com", target="Q1", relation="mentions"),
+            KnowledgeGraphEdge(
+                source="domain:example.com", target="Q1", relation="mentions"
+            ),
         ],
     )
 
@@ -61,7 +74,9 @@ async def test_multi_hop_research_workflow(mock_context):
 
     async def fake_get_details(*, capture_snapshot: bool, **kwargs):
         if capture_snapshot:
-            snapshot_store.record(url=kwargs["url"], content="<html></html>", metadata={})
+            snapshot_store.record(
+                url=kwargs["url"], content="<html></html>", metadata={}
+            )
         return detailed_result
 
     with patch(

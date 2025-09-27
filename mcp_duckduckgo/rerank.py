@@ -5,10 +5,9 @@ from __future__ import annotations
 import math
 import unicodedata
 from collections import Counter
-from typing import Iterable
+from collections.abc import Iterable
 
 from .models import SearchIntent
-
 
 _INTENT_DOMAIN_BOOSTS: dict[SearchIntent, set[str]] = {
     "news": {"news", "cnn", "bbc", "reuters", "times", "guardian"},

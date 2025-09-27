@@ -233,7 +233,9 @@ async def duckduckgo_search(params: dict[str, Any], ctx: Context) -> dict[str, A
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(
                 "HTML title: %s",
-                soup.title.string.strip() if soup.title and soup.title.string else "No title",
+                soup.title.string.strip()
+                if soup.title and soup.title.string
+                else "No title",
             )
 
             tables = soup.find_all("table")
@@ -419,7 +421,9 @@ async def duckduckgo_search(params: dict[str, Any], ctx: Context) -> dict[str, A
         if cached_payload and not payload.get("cache_metadata"):
             payload["cache_metadata"] = {
                 "status": "refresh",
-                "age_seconds": round(cache_lookup.age_seconds, 2) if cache_lookup else None,
+                "age_seconds": round(cache_lookup.age_seconds, 2)
+                if cache_lookup
+                else None,
             }
         else:
             payload.setdefault(
@@ -441,9 +445,7 @@ async def duckduckgo_search(params: dict[str, Any], ctx: Context) -> dict[str, A
 
     except httpx.HTTPStatusError as e:
         status = getattr(e.response, "status_code", "unknown")
-        message = (
-            f"DuckDuckGo returned HTTP status {status} for query '{query}'."
-        )
+        message = f"DuckDuckGo returned HTTP status {status} for query '{query}'."
         logger.exception(message)
         if hasattr(ctx, "error"):
             await ctx.error(message)
@@ -457,8 +459,7 @@ async def duckduckgo_search(params: dict[str, Any], ctx: Context) -> dict[str, A
     except Exception as e:
         summary = _summarize_html(response_text) if response_text else ""
         message = (
-            "Unexpected error parsing DuckDuckGo results for "
-            f"query '{query}': {e!s}."
+            f"Unexpected error parsing DuckDuckGo results for query '{query}': {e!s}."
         )
         if summary:
             message = f"{message} HTML excerpt: {summary}"

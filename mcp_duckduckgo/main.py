@@ -66,7 +66,7 @@ def signal_handler(sig: int, frame: FrameType | None) -> None:
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
                     # If the loop is running, schedule the closure
-                    asyncio.create_task(server_module.close_http_client())
+                    asyncio.create_task(server_module.close_http_client())  # noqa: RUF006
                 else:
                     # If the loop is not running, run the function synchronously
                     loop.run_until_complete(server_module.close_http_client())
@@ -101,19 +101,21 @@ def initialize_mcp() -> Any:
 
     return mcp
 
+
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="DuckDuckGo search plugin for Model Context Protocol",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--port",
         type=int,
         default=3000,
-        help="Port number for the MCP server (default: 3000)"
+        help="Port number for the MCP server (default: 3000)",
     )
     return parser.parse_args()
+
 
 def main() -> None:
     """Run the MCP server."""

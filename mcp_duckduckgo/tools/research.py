@@ -15,7 +15,6 @@ from ..server import mcp
 from .search import duckduckgo_get_details
 from .summarize import summarize_webpage
 
-
 logger = logging.getLogger("mcp_duckduckgo.tools.research")
 
 
@@ -209,7 +208,10 @@ async def duckduckgo_multi_hop_research(
         "query": query,
         "search": search_payload,
         "details": [detail.model_dump() for detail in detailed_results],
-        "summaries": [summary.model_dump() if hasattr(summary, "model_dump") else summary for summary in summaries],
+        "summaries": [
+            summary.model_dump() if hasattr(summary, "model_dump") else summary
+            for summary in summaries
+        ],
         "trace": result.trace,
         "snapshots": snapshot_ids,
     }

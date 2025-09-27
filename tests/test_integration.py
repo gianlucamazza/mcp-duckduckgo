@@ -93,9 +93,7 @@ class TestSearchIntegration:
 
         # Patch the search function
         with (
-            patch(
-                "mcp_duckduckgo.tools.search.duckduckgo_search", mock_search_func
-            ),
+            patch("mcp_duckduckgo.tools.search.duckduckgo_search", mock_search_func),
             patch(
                 "mcp_duckduckgo.tools.search.httpx.AsyncClient",
                 return_value=mock_http_client,
@@ -160,9 +158,7 @@ class TestSearchIntegration:
             return payload
 
         # Patch the search function
-        with patch(
-            "mcp_duckduckgo.tools.search.duckduckgo_search", mock_search_func
-        ):
+        with patch("mcp_duckduckgo.tools.search.duckduckgo_search", mock_search_func):
             # Step 1: Perform the search
             search_result = await duckduckgo_web_search(
                 query="python",
@@ -185,7 +181,7 @@ class TestSearchIntegration:
             # Verify related searches
             assert len(related_searches) == 5
             # The implementation provides placeholder related searches
-            assert any(["python" in s.lower() for s in related_searches])
+            assert any("python" in s.lower() for s in related_searches)
 
     @pytest.mark.asyncio
     async def test_error_recovery_flow(self, mock_context, mock_http_client):
@@ -351,9 +347,7 @@ class TestSearchIntegration:
 
         # Patch both the search function and the web_search function
         with (
-            patch(
-                "mcp_duckduckgo.tools.search.duckduckgo_search", mock_search_func
-            ),
+            patch("mcp_duckduckgo.tools.search.duckduckgo_search", mock_search_func),
             patch(
                 "mcp_duckduckgo.tools.search.duckduckgo_web_search",
                 patched_web_search,

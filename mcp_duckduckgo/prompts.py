@@ -18,13 +18,13 @@ def search_assistant(
     """
     return f"""
     I need to search for information about {topic}.
-    
+
     Please help me formulate an effective search query that will:
     1. Be specific and focused
     2. Use relevant keywords
     3. Avoid unnecessary words
     4. Be under 400 characters
-    
+
     Then, use the duckduckgo_web_search tool with this query to find the most relevant information.
     """
 

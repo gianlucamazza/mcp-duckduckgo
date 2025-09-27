@@ -6,11 +6,10 @@ import asyncio
 import importlib
 import signal
 import types
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
 import pytest
 
-main_module = importlib.import_module("mcp_duckduckgo.main")
 from mcp_duckduckgo.prompts import (
     fact_check_assistant,
     location_search_assistant,
@@ -20,6 +19,8 @@ from mcp_duckduckgo.prompts import (
 )
 from mcp_duckduckgo.resources import get_search_docs, get_search_results
 from mcp_duckduckgo.server import app_lifespan, close_http_client
+
+main_module = importlib.import_module("mcp_duckduckgo.main")
 
 
 def test_get_search_docs_returns_guide() -> None:
@@ -125,7 +126,9 @@ def test_signal_handler_closes_client_and_exits(monkeypatch) -> None:
         nonlocal close_called
         close_called = True
 
-    main_module.server_module = types.SimpleNamespace(close_http_client=close_http_client)
+    main_module.server_module = types.SimpleNamespace(
+        close_http_client=close_http_client
+    )
     main_module.is_shutting_down = False
     main_module.last_interrupt_time = 0
 
@@ -153,7 +156,9 @@ def test_main_handles_keyboard_interrupt(monkeypatch) -> None:
 
     with patch("mcp_duckduckgo.main.signal.signal"):
         with patch("mcp_duckduckgo.main.initialize_mcp", return_value=fake_mcp):
-            with patch("mcp_duckduckgo.main.asyncio.get_event_loop", return_value=stub_loop):
+            with patch(
+                "mcp_duckduckgo.main.asyncio.get_event_loop", return_value=stub_loop
+            ):
                 main_module.server_module = types.SimpleNamespace(
                     close_http_client=close_http_client
                 )
@@ -168,7 +173,9 @@ def test_main_handles_keyboard_interrupt(monkeypatch) -> None:
 
 def test_main_propagates_unexpected_errors() -> None:
     with patch("mcp_duckduckgo.main.signal.signal"):
-        with patch("mcp_duckduckgo.main.initialize_mcp", side_effect=RuntimeError("boom")):
+        with patch(
+            "mcp_duckduckgo.main.initialize_mcp", side_effect=RuntimeError("boom")
+        ):
             with pytest.raises(RuntimeError):
                 main_module.main()
 
@@ -194,8 +201,12 @@ class RunningLoopStub:
         self.is_running_called = True
         return True
 
-    def run_until_complete(self, coro) -> None:  # pragma: no cover - not used in this scenario
-        raise AssertionError("run_until_complete should not be called when loop is running")
+    def run_until_complete(
+        self, coro
+    ) -> None:  # pragma: no cover - not used in this scenario
+        raise AssertionError(
+            "run_until_complete should not be called when loop is running"
+        )
 
 
 def test_signal_handler_with_running_loop(monkeypatch) -> None:
@@ -205,7 +216,9 @@ def test_signal_handler_with_running_loop(monkeypatch) -> None:
         return None
 
     running_loop = RunningLoopStub()
-    main_module.server_module = types.SimpleNamespace(close_http_client=close_http_client)
+    main_module.server_module = types.SimpleNamespace(
+        close_http_client=close_http_client
+    )
     main_module.is_shutting_down = False
     main_module.last_interrupt_time = 0
 
@@ -215,7 +228,9 @@ def test_signal_handler_with_running_loop(monkeypatch) -> None:
         return coro
 
     with patch("mcp_duckduckgo.main.asyncio.get_event_loop", return_value=running_loop):
-        with patch("mcp_duckduckgo.main.asyncio.create_task", side_effect=create_task_stub):
+        with patch(
+            "mcp_duckduckgo.main.asyncio.create_task", side_effect=create_task_stub
+        ):
             with patch("mcp_duckduckgo.main.threading.Thread", ImmediateThread):
                 with patch("mcp_duckduckgo.main.os._exit") as mock_exit:
                     with patch("mcp_duckduckgo.main.time.sleep", return_value=None):

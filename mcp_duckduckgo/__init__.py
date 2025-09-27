@@ -12,7 +12,6 @@ from .main import main
 from .models import DetailedResult, LinkedContent, SearchResponse, SearchResult
 from .search import duckduckgo_search, extract_domain
 from .server import mcp
-from .typing_utils import is_tag, safe_get_attr, safe_get_text
 
 # Import tools
 from .tools import (
@@ -24,19 +23,20 @@ from .tools import (
     location_search,
     summarize_webpage,
 )
+from .typing_utils import is_tag, safe_get_attr, safe_get_text
 
 __all__ = [
     "DetailedResult",
     "LinkedContent",
     "SearchResponse",
     "SearchResult",
+    "detect_query_intent",
     "dev_search",
     "duckduckgo_get_details",
     "duckduckgo_related_searches",
     "duckduckgo_search",
     "duckduckgo_web_search",
     "extract_domain",
-    "detect_query_intent",
     "fact_check",
     "is_tag",
     "location_search",

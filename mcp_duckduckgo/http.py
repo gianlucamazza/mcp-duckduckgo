@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Tuple
+from typing import Any
 
 import httpx
 from mcp.server.fastmcp import Context
-
 
 logger = logging.getLogger("mcp_duckduckgo.http")
 
@@ -33,14 +32,18 @@ def _get_lifespan_context(ctx: Context) -> Any:
     return getattr(request_context, "lifespan_context", None)
 
 
-def get_http_client(ctx: Context, timeout: float = 15.0) -> Tuple[httpx.AsyncClient, bool]:
+def get_http_client(
+    ctx: Context, timeout: float = 15.0
+) -> tuple[httpx.AsyncClient, bool]:
     lifespan_ctx = _get_lifespan_context(ctx)
     if isinstance(lifespan_ctx, dict):
         client = lifespan_ctx.get("http_client")
         client_type = getattr(httpx, "AsyncClient", None)
         is_real_type = isinstance(client_type, type)
         try:
-            if (is_real_type and isinstance(client, client_type)) or _looks_like_async_client(client):
+            if (
+                is_real_type and isinstance(client, client_type)
+            ) or _looks_like_async_client(client):
                 return client, False
         except TypeError:
             pass
@@ -66,4 +69,6 @@ def get_http_client(ctx: Context, timeout: float = 15.0) -> Tuple[httpx.AsyncCli
 def _looks_like_async_client(client: object) -> bool:
     if client is None:
         return False
-    return hasattr(client, "get") and hasattr(client, "post") and hasattr(client, "aclose")
+    return (
+        hasattr(client, "get") and hasattr(client, "post") and hasattr(client, "aclose")
+    )

@@ -11,8 +11,8 @@ import pytest
 from bs4 import BeautifulSoup
 from mcp.server.fastmcp import Context
 
-from mcp_duckduckgo.semantic_cache import semantic_cache
 from mcp_duckduckgo.sandbox.snapshots import snapshot_store
+from mcp_duckduckgo.semantic_cache import semantic_cache
 
 # Sample HTML response for mocking DuckDuckGo search results
 SAMPLE_SEARCH_HTML = """
