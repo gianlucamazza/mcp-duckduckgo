@@ -24,7 +24,7 @@ http_client = None
 
 
 @asynccontextmanager
-async def app_lifespan(server: FastMCP) -> AsyncIterator[dict[str, Any]]:
+async def app_lifespan(_server: FastMCP) -> AsyncIterator[dict[str, Any]]:
     """Manage application lifecycle with proper resource initialization and cleanup."""
     global http_client
     try:

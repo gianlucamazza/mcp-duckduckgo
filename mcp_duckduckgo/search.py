@@ -16,6 +16,7 @@ from mcp.server.fastmcp import Context
 
 from .http import get_http_client
 from .rerank import rerank_results
+from .exceptions import SearchError, ValidationError
 from .models import SearchIntent
 from .semantic_cache import semantic_cache
 
@@ -132,11 +133,11 @@ async def duckduckgo_search(params: dict[str, Any], ctx: Context) -> dict[str, A
         page = int(params.get("page", 1))
     except (TypeError, ValueError) as exc:
         logger.error("Invalid pagination parameters: %s", exc)
-        raise ValueError("Pagination parameters must be integers") from exc
+        raise ValidationError("Pagination parameters must be integers") from exc
 
     if not query:
         logger.error("Query parameter is required")
-        raise ValueError("Query parameter is required")
+        raise SearchError("Query parameter is required")
 
     logger.info("Searching DuckDuckGo for query '%s'", query)
 

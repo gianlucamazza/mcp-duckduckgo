@@ -7,6 +7,8 @@ This package provides search functionality using DuckDuckGo.
 __version__ = "0.1.1"
 
 # Import main function to make it available at package level
+from .config import DEFAULT_TIMEOUT, MAX_RESULTS_PER_REQUEST
+from .context_utils import MinimalContext
 from .intent import detect_query_intent
 from .main import main
 from .models import DetailedResult, LinkedContent, SearchResponse, SearchResult
@@ -26,8 +28,11 @@ from .tools import (
 from .typing_utils import is_tag, safe_get_attr, safe_get_text
 
 __all__ = [
+    "DEFAULT_TIMEOUT",
     "DetailedResult",
     "LinkedContent",
+    "MAX_RESULTS_PER_REQUEST",
+    "MinimalContext",
     "SearchResponse",
     "SearchResult",
     "detect_query_intent",

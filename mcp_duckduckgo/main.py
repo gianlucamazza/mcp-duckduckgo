@@ -32,7 +32,7 @@ is_shutting_down = False
 last_interrupt_time: float = 0.0
 
 
-def signal_handler(sig: int, frame: FrameType | None) -> None:
+def signal_handler(sig: int, _frame: FrameType | None) -> None:
     """Handle process interruption signals like SIGINT (Ctrl+C)."""
     global is_shutting_down, last_interrupt_time
 

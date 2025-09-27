@@ -145,7 +145,7 @@ class ErrorCollector:
     def __enter__(self) -> "ErrorCollector":
         return self
 
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+    def __exit__(self, _exc_type: Any, _exc_val: Any, _exc_tb: Any) -> None:
         self.raise_if_errors()
 
 

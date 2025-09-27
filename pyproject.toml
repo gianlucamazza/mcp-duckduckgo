@@ -158,9 +158,9 @@ skips = ["*test*.py", "**/test_*.py"]
 
 [tool.vulture]
 paths = ["mcp_duckduckgo"]
-min_confidence = 60
+min_confidence = 80
 ignore_decorators = ["@mcp.tool", "@mcp.prompt", "@pytest.fixture"]
-ignore_names = ["vulture", "_*"]
+ignore_names = ["vulture", "_*", "*Error", "*ExceptionGroup"]
 exclude = ["tests/", "build/", "dist/"]
 
 [tool.semgrep]

@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from ..enrichment import build_knowledge_graph
 from ..intent import detect_query_intent
+from ..context_utils import MinimalContext
 from ..models import SearchIntent
 from ..models import DetailedResult, SearchResponse, SearchResult
 from ..sandbox.snapshots import snapshot_store
@@ -112,9 +113,6 @@ async def duckduckgo_web_search(  # vulture: ignore
             logger.error("Context is None!")
 
             # Create a minimal context if none is provided
-            class MinimalContext(BaseModel):
-                pass
-
             ctx = cast(Any, MinimalContext())
 
         # Calculate offset from page number
@@ -390,9 +388,6 @@ async def duckduckgo_related_searches(  # vulture: ignore
             logger.error("Context is None!")
 
             # Create a minimal context if none is provided
-            class MinimalContext(BaseModel):
-                pass
-
             ctx = cast(Any, MinimalContext())
 
         # Use the main search function with a special flag for related searches
