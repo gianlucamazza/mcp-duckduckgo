@@ -4,7 +4,7 @@ DuckDuckGo search plugin for Model Context Protocol.
 This package provides search functionality using DuckDuckGo.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from .models import SearchResult, SearchResponse
 from .search import duckduckgo_search

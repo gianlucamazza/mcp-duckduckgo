@@ -34,14 +34,12 @@ async def app_lifespan(server: FastMCP) -> AsyncIterator[Dict[str, Any]]:
         logger.info("Shutting down DuckDuckGo search server")
         await http_client.aclose()
 
-# Initialize FastMCP server with lifespan
-mcp = FastMCP(
-    "DuckDuckGo Search", 
-    version="0.1.0",
-    port=3000, 
-    transport={
-        "type": "sse",
-        "endpoint": "/sse"
-    },
-    lifespan=app_lifespan
-) 
+def create_mcp_server() -> FastMCP:
+    """Create and return a FastMCP server instance."""
+    return FastMCP(
+        "DuckDuckGo Search",
+        lifespan=app_lifespan
+    )
+
+# Initialize FastMCP server with lifespan (default port for backward compatibility)
+mcp = create_mcp_server()

@@ -29,7 +29,7 @@ This project implements a Model Context Protocol (MCP) server that provides web 
 ## Requirements
 
 - Python 3.9 or higher
-- pip (Python package manager)
+- Package manager: `uv` (recommended) or `pip`
 - Python packages listed in `pyproject.toml`
 
 ## Installation
@@ -45,6 +45,29 @@ pip install mcp-duckduckgo
 ```
 
 ### From Source
+
+#### Using uv (Recommended)
+
+[uv](https://github.com/astral-sh/uv) is a fast Python package manager that provides better dependency resolution and faster installs.
+
+1. Install uv if you haven't already:
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+2. Clone and install as a tool:
+   ```bash
+   git clone https://github.com/gianlucamazza/mcp-duckduckgo.git
+   cd mcp-duckduckgo
+   uv tool install .
+   ```
+
+   Or install directly from the repository:
+   ```bash
+   uv tool install git+https://github.com/gianlucamazza/mcp-duckduckgo.git
+   ```
+
+#### Using pip
 
 1. Clone this repository:
 
@@ -84,7 +107,7 @@ mcp-duckduckgo
 Or with custom parameters:
 
 ```bash
-mcp-duckduckgo --host 127.0.0.1 --port 8000
+mcp-duckduckgo --port 8000
 ```
 
 Or use the provided script for development:
@@ -99,6 +122,25 @@ Or use Make:
 make run
 ```
 
+### Environment Variables
+
+The MCP server can be configured using environment variables:
+
+- `MCP_PORT`: Set the port number for the server (default: 3000)
+
+Example usage:
+
+```bash
+# Set port via environment variable
+export MCP_PORT=8080
+mcp-duckduckgo
+
+# Or set it inline
+MCP_PORT=8080 mcp-duckduckgo
+```
+
+Note: The `--port` command-line argument takes precedence over the `MCP_PORT` environment variable.
+
 ### Using with Claude Code
 
 1. Install the package from source as described above.
@@ -112,7 +154,7 @@ make run
 3. For global configuration (available in all projects):
 
    ```bash
-   claude mcp add duckduckgo-search --scope global -- mcp-duckduckgo
+   claude mcp add duckduckgo-search --scope user -- mcp-duckduckgo
    ```
 
 4. Start Claude Code:
@@ -431,4 +473,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Repository
 
-https://github.com/gianlucamazza/mcp-duckduckgo
+[GitHub Repository](https://github.com/gianlucamazza/mcp-duckduckgo)
