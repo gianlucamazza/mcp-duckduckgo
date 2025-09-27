@@ -55,7 +55,7 @@ def fact_check_assistant(
 @mcp.prompt()  # pragma: no cover
 def technical_search_assistant(
     query: str = Field(..., description="The technical query or problem"),
-    language: str = Field(
+    language: str | None = Field(
         None, description="Programming language (e.g. Python, JavaScript)"
     ),
 ) -> str:  # vulture: ignore

@@ -121,7 +121,7 @@ def handle_multiple_errors(errors: list[Exception], context: str = "") -> None:
 class ErrorCollector:
     """Collect errors for batch processing."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.errors: list[Exception] = []
         self.context = ""
 

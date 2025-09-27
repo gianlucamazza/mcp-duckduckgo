@@ -4,7 +4,7 @@ Search tools for the DuckDuckGo search plugin.
 
 import logging
 import traceback
-from typing import cast
+from typing import Any, cast
 
 import httpx
 from bs4 import BeautifulSoup
@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from ..enrichment import build_knowledge_graph
 from ..intent import detect_query_intent
+from ..models import SearchIntent
 from ..models import DetailedResult, SearchResponse, SearchResult
 from ..sandbox.snapshots import snapshot_store
 from ..search import DuckDuckGoSearchError, duckduckgo_search, extract_domain
@@ -114,12 +115,13 @@ async def duckduckgo_web_search(  # vulture: ignore
             class MinimalContext(BaseModel):
                 pass
 
-            ctx = MinimalContext()
+            ctx = cast(Any, MinimalContext())
 
         # Calculate offset from page number
         offset = (page - 1) * count
 
-        intent, intent_confidence = detect_query_intent(query)
+        intent_raw, intent_confidence = detect_query_intent(query)
+        intent = cast(SearchIntent, intent_raw)
 
         result = await duckduckgo_search(
             {
@@ -255,7 +257,7 @@ async def duckduckgo_get_details(
             soup = BeautifulSoup(html_text, "html.parser")
 
             # Extract title
-            title = soup.title.string.strip() if soup.title else "No title"
+            title = soup.title.string.strip() if soup.title and soup.title.string else "No title"
 
             # Extract metadata
             metadata = extract_metadata(soup, domain, url)
@@ -387,7 +389,7 @@ async def duckduckgo_related_searches(  # vulture: ignore
             class MinimalContext(BaseModel):
                 pass
 
-            ctx = MinimalContext()
+            ctx = cast(Any, MinimalContext())
 
         # Use the main search function with a special flag for related searches
         result = await duckduckgo_search(

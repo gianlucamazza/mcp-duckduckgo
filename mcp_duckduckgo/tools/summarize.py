@@ -87,7 +87,7 @@ async def summarize_webpage(
             soup = BeautifulSoup(response.text, "html.parser")
 
             # Extract title
-            title = soup.title.string.strip() if soup.title else "No title"
+            title = soup.title.string.strip() if soup.title and soup.title.string else "No title"
 
             # Extract targeted content
             content_snippet, headings = extract_targeted_content(soup, domain)

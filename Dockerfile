@@ -2,7 +2,7 @@
 # Using Python 3.12 for optimal performance and security
 
 # Build stage
-FROM python:3.12-slim as builder
+FROM python:3.12-slim AS builder
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -30,7 +30,7 @@ RUN pip install --upgrade pip && \
     pip install .
 
 # Production stage
-FROM python:3.12-slim as production
+FROM python:3.12-slim AS production
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -70,7 +70,7 @@ EXPOSE 3000
 CMD ["python", "-m", "mcp_duckduckgo.main"]
 
 # Development stage
-FROM builder as development
+FROM builder AS development
 
 # Install development dependencies
 RUN pip install -e ".[test,dev]"

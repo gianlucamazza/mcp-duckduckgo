@@ -8,7 +8,7 @@ import contextlib
 import logging
 import urllib.parse
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, cast
 
 import httpx
 from bs4 import BeautifulSoup
@@ -16,6 +16,7 @@ from mcp.server.fastmcp import Context
 
 from .http import get_http_client
 from .rerank import rerank_results
+from .models import SearchIntent
 from .semantic_cache import semantic_cache
 
 # Configure logging
@@ -148,7 +149,7 @@ async def duckduckgo_search(params: dict[str, Any], ctx: Context) -> dict[str, A
 
     response_text: str | None = None
 
-    intent = params.get("intent") or "general"
+    intent = cast(SearchIntent, params.get("intent") or "general")
     embedding_signature = semantic_cache.embed_query(query)
     site = params.get("site")
     time_period = params.get("time_period")
@@ -180,9 +181,9 @@ async def duckduckgo_search(params: dict[str, Any], ctx: Context) -> dict[str, A
     cache_lookup = semantic_cache.get(cache_key, intent=intent)
     if cache_lookup:
         if cache_lookup.fresh:
-            payload = cache_lookup.payload
-            payload["intent"] = intent
-            payload["cache_metadata"] = {
+            cached_result = cache_lookup.payload
+            cached_result["intent"] = intent
+            cached_result["cache_metadata"] = {
                 "status": "hit",
                 "age_seconds": round(cache_lookup.age_seconds, 2),
             }
@@ -191,7 +192,7 @@ async def duckduckgo_search(params: dict[str, Any], ctx: Context) -> dict[str, A
                     await ctx.debug(
                         f"Cache hit for query '{query}' (age {cache_lookup.age_seconds:.1f}s)"
                     )
-            return payload
+            return cached_result
 
         cached_payload = cache_lookup.payload
 

@@ -103,7 +103,7 @@ def detect_query_intent(query: str) -> tuple[str, float]:
     if "site:" in joined and "github" in joined:
         scores["technical"] += 1
     if any(token.isdigit() and len(token) == 4 for token in tokens):
-        scores["news"] += 0.5
+        scores["news"] += int(0.5)
 
     if not scores:
         return "general", 0.0

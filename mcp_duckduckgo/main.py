@@ -102,7 +102,7 @@ def initialize_mcp() -> Any:
     return mcp
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="DuckDuckGo search plugin for Model Context Protocol",

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, cast
 
 import httpx
 from mcp.server.fastmcp import Context
@@ -42,9 +42,9 @@ def get_http_client(
         is_real_type = isinstance(client_type, type)
         try:
             if (
-                is_real_type and isinstance(client, client_type)
+                is_real_type and client_type and isinstance(client, client_type)
             ) or _looks_like_async_client(client):
-                return client, False
+                return cast(httpx.AsyncClient, client), False
         except TypeError:
             pass
 

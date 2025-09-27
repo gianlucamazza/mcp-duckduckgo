@@ -123,11 +123,11 @@ class HTMLElementProtocol:
 
     def find_all(self, *args: Any, **kwargs: Any) -> "ResultSet[PageElement]":
         """Find all matching elements."""
-        ...
+        return cast("ResultSet[PageElement]", [])
 
     def get_text(self, strip: bool = False) -> str:
         """Get text content."""
-        ...
+        return ""
 
 
 def as_tag(element: PageElement) -> Tag:

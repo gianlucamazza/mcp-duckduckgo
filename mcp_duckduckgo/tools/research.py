@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, cast
 
 from mcp.server.fastmcp import Context
 from pydantic import Field
@@ -103,7 +103,7 @@ def _build_orchestrator() -> MultiHopOrchestrator:
         "details": _detail_hop,
         "summary": _summary_hop,
     }
-    return MultiHopOrchestrator(registry)
+    return MultiHopOrchestrator(cast(Any, registry))
 
 
 def _build_plan() -> MultiHopPlan:
@@ -188,7 +188,7 @@ async def duckduckgo_multi_hop_research(
                 name=hop.name,
                 tool=hop.tool,
                 depends_on=hop.depends_on,
-                params=hop_overrides.get(hop.name, hop.params),
+                params=cast(Any, hop_overrides.get(hop.name, hop.params)),
             )
             for hop in plan.ordered_hops()
         ]

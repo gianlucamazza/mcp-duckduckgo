@@ -355,7 +355,7 @@ def extract_targeted_content(soup: BeautifulSoup, domain: str) -> tuple[str, lis
             content_div = soup.find(
                 ["div", "article", "main"], attrs={"id": container_id}
             )
-            if content_div:
+            if content_div and hasattr(content_div, 'find_all'):
                 paragraphs = content_div.find_all("p")
                 content_parts = []
                 for p in paragraphs[:10]:
@@ -371,7 +371,7 @@ def extract_targeted_content(soup: BeautifulSoup, domain: str) -> tuple[str, lis
                 content_div = soup.find(
                     ["div", "article", "main"], attrs={"class": container_class}
                 )
-                if content_div:
+                if content_div and hasattr(content_div, 'find_all'):
                     paragraphs = content_div.find_all("p")
                     content_parts = []
                     for p in paragraphs[:10]:
