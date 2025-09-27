@@ -76,6 +76,9 @@ line-length = 88
 fix = true
 show-fixes = true
 respect-gitignore = true
+exclude = [
+    ".vulture_whitelist.py",
+]
 
 [tool.ruff.lint]
 select = [
