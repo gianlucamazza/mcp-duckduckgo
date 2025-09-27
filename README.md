@@ -1,8 +1,11 @@
 # MCP DuckDuckGo Search Plugin
 
-A DuckDuckGo search plugin for Model Context Protocol (MCP), compatible with Claude Code. Provides web search functionality with advanced navigation and content exploration features.
+A modern, feature-rich DuckDuckGo search plugin for Model Context Protocol (MCP), built with current Python best practices. Compatible with Claude Code and any MCP-supporting client.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Code style: Ruff](https://img.shields.io/badge/Code%20style-Ruff-black.svg)](https://github.com/astral-sh/ruff)
+[![Type checked: mypy](https://img.shields.io/badge/Type%20checked-mypy-blue.svg)](http://mypy-lang.org/)
 [![GitHub](https://img.shields.io/github/stars/gianlucamazza/mcp-duckduckgo?style=social)](https://github.com/gianlucamazza/mcp-duckduckgo)
 
 ## Description
@@ -25,10 +28,28 @@ This project implements a Model Context Protocol (MCP) server that provides web 
 - **Search Documentation**: Access comprehensive documentation about the search functionality
 - **Search Assistant**: Get help formulating effective search queries
 - **Parameterized Resource**: Retrieve formatted search results for specific queries
+- **Semantic Cache**: Freshness-aware caching with automatic invalidation heuristics per query intent
+- **Knowledge Graph Enrichment**: Link extracted entities to lightweight knowledge graphs for richer reasoning
+- **Sandbox Snapshots**: Capture reproducible HTML snapshots for auditing and differential analysis
+- **Multi-hop Research**: Orchestrate search, detail enrichment, and summarization with a single tool call
+
+## Modern Python Features
+
+This codebase showcases modern Python development practices:
+
+- **🚀 Modern Syntax**: Leverages union types (`|`), pattern matching, and enhanced error messages
+- **⚡ Fast Tooling**: Ruff for ultra-fast linting and formatting
+- **🔒 Type Safety**: Comprehensive type hints with future annotations
+- **🛡️ Security**: Integrated vulnerability scanning (bandit, safety, semgrep)
+- **🧪 Robust Testing**: Property-based testing with Hypothesis for edge cases
+- **📦 Standards Compliance**: pyproject.toml with strict dependency management
+- **🐳 Containerization**: Multi-stage Docker builds for production deployment
+- **⚙️ Automation**: GitHub Actions CI/CD with matrix testing
+- **📊 Observability**: Health checks and metrics collection ready
 
 ## Requirements
 
-- Python 3.9 or higher
+- Python 3.10 or higher (latest version recommended)
 - Package manager: `uv` (recommended) or `pip`
 - Python packages listed in `pyproject.toml`
 
@@ -210,6 +231,22 @@ Example usage in Claude Code:
 Find related searches for "renewable energy"
 ```
 
+### Tool: `duckduckgo_multi_hop_research`
+
+Runs an orchestrated research workflow that chains search, detail fetching, and summarization:
+
+- `query` (required): Research topic to investigate (max 400 characters)
+- `count` (optional, default: 6): Number of initial search results to retrieve (1-15)
+- `detail_count` (optional, default: 3): How many results to enrich with detailed scraping (1-6)
+- `summary_length` (optional, default: 300): Maximum length of each generated summary (120-600 characters)
+- `capture_snapshots` (optional, default: false): Persist HTML snapshots to the local sandbox for reproducible audits
+
+Example usage in Claude Code:
+
+```text
+Run a multi-hop research workflow about "quantum networking" with 4 results and summaries up to 250 characters
+```
+
 ### Resource: `docs://search`
 
 Provides comprehensive documentation about the search functionality.
@@ -292,6 +329,16 @@ Search for "python machine learning libraries", then get details on the top resu
 
 This implementation uses DuckDuckGo's public web interface and parses the HTML response to extract results. This approach is used for demonstration purposes, as DuckDuckGo does not offer an official search API. In a production environment, it's recommended to use a search service with an official API.
 
+### Repository Layout
+
+- `mcp_duckduckgo/search.py` – Core search flow, semantic cache integration, and reranking
+- `mcp_duckduckgo/tools/` – Individual MCP tools including the new `research.py` orchestrator
+- `mcp_duckduckgo/semantic_cache.py` – Freshness-aware caching layer with intent-specific TTLs
+- `mcp_duckduckgo/knowledge_graph.py` & `enrichment.py` – Entity linking and graph construction utilities
+- `mcp_duckduckgo/sandbox/` – Snapshot storage utilities for reproducible audits
+- `mcp_duckduckgo/orchestration/` – Declarative multi-hop planning and execution engine
+- `tests/` – Extensive unit, integration, and workflow coverage mirroring the modules above
+
 ## Enhanced Content Extraction
 
 The DuckDuckGo plugin includes advanced content extraction capabilities that go beyond simple search results:
@@ -328,6 +375,43 @@ To control spidering behavior:
 ```text
 Get details for "https://example.com/article" with spider depth 2, max links 3, same domain only
 ```
+
+## Knowledge Graph Enrichment
+
+Detailed results now include a lightweight knowledge graph composed of the source domain and salient entities referenced in the page. Entity linking is performed locally with deterministic fallbacks, enabling downstream reasoning about relationships without relying on external APIs.
+
+- Graphs are returned in the `knowledge_graph` field of `DetailedResult`
+- Nodes include provenance metadata and confidence scores
+- Edges express the relationship between the crawled domain and linked entities
+
+Example:
+
+```text
+Get details for "https://example.gov/policy" with spider depth 0
+```
+
+You will receive a knowledge graph alongside the usual structured metadata, which can be fed into follow-up tools or external reasoning engines.
+
+## Semantic Cache & Freshness Management
+
+Search requests are served through an intent-aware semantic cache that accelerates repeated queries while respecting topical freshness:
+
+- Cache keys blend query embeddings, pagination, filters, and related-search options
+- Per-intent TTLs (e.g., 15 minutes for news, 24 hours for technical queries) automatically refresh stale entries
+- Partial hits seamlessly merge with newly fetched results, preserving relevance while updating content
+- Domain-level invalidation lets downstream workflows force-refresh when a site is known to have changed
+
+Cache diagnostics are exposed in the `cache_metadata` field of search responses. To invalidate cache entries programmatically, call `semantic_cache.mark_domain_stale("example.com")` from custom extensions.
+
+## Sandbox Snapshots & Auditing
+
+Setting `capture_snapshots=true` in `duckduckgo_multi_hop_research` or `duckduckgo_get_details` stores HTML snapshots in a local sandbox ledger:
+
+- Snapshots capture canonicalized previews and metadata for reproducibility
+- Deterministic IDs allow diffing between runs via the `snapshot_store.diff()` helper
+- The store is automatically pruned to maintain a bounded footprint
+
+This is particularly useful when generating compliance reports or running long-lived research tasks that require auditable trails.
 
 ## Development
 
@@ -406,13 +490,17 @@ make test
 
 The test suite is organized as follows:
 
-- `conftest.py` - Shared fixtures and configurations for tests
-- `test_models.py` - Tests for data models
-- `test_search.py` - Tests for search functionality
-- `test_tools.py` - Tests for MCP tools
-- `test_resources.py` - Tests for MCP resources
-- `test_integration.py` - End-to-end integration tests
-- `test_server.py` - Server lifecycle tests
+- `conftest.py` – Shared fixtures and cache/snapshot reset hooks
+- `test_search.py` – Core search behavior and caching scenarios
+- `test_tools.py` – Traditional MCP tool coverage
+- `test_research_tool.py` – Multi-hop orchestration workflow
+- `test_enrichment.py` – Knowledge graph enrichment pipeline
+- `test_semantic_cache.py` – Semantic cache heuristics and eviction
+- `test_knowledge_graph.py` – Entity linking behavior and graph structure
+- `test_sandbox.py` – Snapshot store management and diffing
+- `test_orchestration.py` – Orchestrator dependency resolution
+- `test_integration.py` – End-to-end integration tests
+- `test_utils_module.py` – Utilities and HTML extraction helpers
 
 For more details about testing, see the [tests/README.md](tests/README.md) file.
 

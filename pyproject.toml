@@ -20,6 +20,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
@@ -38,14 +40,24 @@ test = [
     "pytest-asyncio>=0.21.1",
     "pytest-cov>=4.1.0",
     "mypy>=1.6.0",
-    "black>=23.9.1",
-    "isort>=5.12.0",
-    "httpx>=0.25.0"
+    "ruff>=0.1.0",
+    "httpx>=0.25.0",
+    "types-beautifulsoup4>=4.12.0",
+    "types-requests>=2.31.0",
+    "hypothesis>=6.0.0",
+    "pytest-benchmark>=4.0.0",
+    "memory-profiler>=0.61.0"
 ]
 dev = [
     "pip>=23.2.1",
     "build>=1.0.3",
     "twine>=4.0.2",
+    "pre-commit>=3.0.0",
+    "bandit[toml]>=1.7.5",
+    "safety>=2.3.0",
+    "vulture>=2.10",
+    "pip-audit>=2.6.0",
+    "semgrep>=1.45.0",
 ]
 
 [project.urls]
@@ -57,14 +69,37 @@ Documentation = "https://github.com/gianlucamazza/mcp-duckduckgo#readme"
 [project.scripts]
 mcp-duckduckgo = "mcp_duckduckgo.main:main"
 
-[tool.black]
+[tool.ruff]
+target-version = "py310"
 line-length = 88
-target-version = ["py310"]
-include = '\.pyi?$'
+fix = true
 
-[tool.isort]
-profile = "black"
-line_length = 88
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["F401", "F811"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.10"
@@ -78,3 +113,56 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+addopts = [
+    "--cov=mcp_duckduckgo",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-fail-under=80",
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["mcp_duckduckgo"]
+branch = true
+omit = [
+    "tests/*",
+    "*/conftest.py",
+    "*/__main__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101", "B601"]  # Skip assert_used, shell usage
+
+[tool.bandit.assert_used]
+skips = ["*test*.py", "**/test_*.py"]
+
+[tool.vulture]
+paths = ["mcp_duckduckgo"]
+min_confidence = 60
+ignore_decorators = ["@mcp.tool", "@mcp.prompt", "@pytest.fixture"]
+ignore_names = ["vulture", "_*"]
+exclude = ["tests/", "build/", "dist/"]
+
+[tool.semgrep]
+config = "auto"
+exclude = ["tests/", ".venv/", "build/", "dist/"]

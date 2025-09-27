@@ -1,0 +1,78 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: check-docstring-first
+      - id: check-json
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        additional_dependencies: [
+          "types-beautifulsoup4",
+          "types-requests",
+          "pydantic",
+          "httpx"
+        ]
+        args: [--ignore-missing-imports]
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+      - id: python-safety-dependencies-check
+
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.88.0
+    hooks:
+      - id: semgrep
+        args: [--config=auto]
+        exclude: ^(tests/|\.venv/)
+
+  - repo: local
+    hooks:
+      - id: vulture-check
+        name: vulture-check
+        entry: vulture
+        language: system
+        files: ^mcp_duckduckgo/
+        args: [--min-confidence, "60"]
+        
+      - id: pip-audit-check
+        name: pip-audit-check
+        entry: pip-audit
+        language: system
+        pass_filenames: false
+        always_run: true
+        
+      - id: pytest-check
+        name: pytest-check
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [--cov=mcp_duckduckgo, --cov-fail-under=80, --maxfail=5]

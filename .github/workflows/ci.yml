@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION_DEFAULT: "3.12"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: 'pyproject.toml'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[test,dev]"
+
+    - name: Run ruff linting
+      run: |
+        ruff check . --output-format=github
+        ruff format --check .
+
+    - name: Run mypy type checking
+      run: mypy mcp_duckduckgo/ --ignore-missing-imports
+
+    - name: Run bandit security check
+      run: |
+        bandit -r mcp_duckduckgo/ -c pyproject.toml -f json -o bandit-results.json
+        bandit -r mcp_duckduckgo/ -c pyproject.toml
+
+    - name: Run safety check
+      run: safety check --json --output safety-results.json || safety check
+
+    - name: Run pip-audit security scan
+      run: pip-audit --format=json --output=pip-audit-results.json || pip-audit
+
+    - name: Run semgrep security analysis
+      if: matrix.python-version == env.PYTHON_VERSION_DEFAULT
+      run: |
+        semgrep --config=auto --json --output=semgrep-results.json mcp_duckduckgo/ || true
+        semgrep --config=auto mcp_duckduckgo/
+
+    - name: Run vulture dead code detection
+      if: matrix.python-version == env.PYTHON_VERSION_DEFAULT
+      run: vulture mcp_duckduckgo/ --min-confidence 60
+
+    - name: Run tests with coverage
+      run: pytest --cov=mcp_duckduckgo --cov-report=xml --cov-report=term --cov-fail-under=80
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      if: matrix.python-version == env.PYTHON_VERSION_DEFAULT
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: Upload security artifacts
+      if: matrix.python-version == env.PYTHON_VERSION_DEFAULT && always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: |
+          bandit-results.json
+          safety-results.json
+          pip-audit-results.json
+          semgrep-results.json
+        retention-days: 30
+
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: python
+        config-file: ./.github/codeql-config.yml
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[test,dev]"
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:python"
+
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependency Review
+      uses: actions/dependency-review-action@v4
+      with:
+        fail-on-severity: moderate
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+        cache: 'pip'
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build package
+      run: python -m build
+
+    - name: Check build
+      run: twine check dist/*
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-python-${{ env.PYTHON_VERSION_DEFAULT }}
+        path: dist/
