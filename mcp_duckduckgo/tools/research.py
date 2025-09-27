@@ -27,6 +27,18 @@ async def _search_hop(
     state: dict[str, Any],
     **_: Any,
 ) -> dict[str, Any]:
+    """Execute the search phase of the research workflow.
+
+    Args:
+        query: The search query
+        count: Number of results to retrieve
+        intent: Optional search intent classification
+        ctx: MCP context
+        state: Shared workflow state
+
+    Returns:
+        Search results payload
+    """
     params = {
         "query": query,
         "count": count,
@@ -49,6 +61,18 @@ async def _detail_hop(
     capture_snapshots: bool,
     **_: Any,
 ) -> list[DetailedResult]:
+    """Execute the detail enrichment phase of the research workflow.
+
+    Args:
+        dependencies: Results from previous workflow hops
+        state: Shared workflow state
+        ctx: MCP context
+        detail_count: Number of results to enrich with details
+        capture_snapshots: Whether to capture page snapshots
+
+    Returns:
+        List of detailed result objects
+    """
     search_payload = dependencies.get("search", {})
     results = search_payload.get("results", [])
     selected = results[:detail_count]
@@ -80,6 +104,17 @@ async def _summary_hop(
     summary_length: int,
     **_: Any,
 ) -> dict[str, Any]:
+    """Execute the summarization phase of the research workflow.
+
+    Args:
+        dependencies: Results from previous workflow hops
+        ctx: MCP context
+        state: Shared workflow state
+        summary_length: Maximum length for each summary
+
+    Returns:
+        Dictionary containing the generated summaries
+    """
     detailed_results: Sequence[DetailedResult] = dependencies.get("details", [])
     if not detailed_results:
         return {"summaries": []}
@@ -98,6 +133,11 @@ async def _summary_hop(
 
 
 def _build_orchestrator() -> MultiHopOrchestrator:
+    """Build the multi-hop orchestrator for research workflows.
+
+    Returns:
+        Configured orchestrator with research hop functions
+    """
     registry = {
         "search": _search_hop,
         "details": _detail_hop,
@@ -107,6 +147,11 @@ def _build_orchestrator() -> MultiHopOrchestrator:
 
 
 def _build_plan() -> MultiHopPlan:
+    """Build the execution plan for the research workflow.
+
+    Returns:
+        Multi-hop plan with search -> details -> summary flow
+    """
     hops = [
         Hop(
             name="search",

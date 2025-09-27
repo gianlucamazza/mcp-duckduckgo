@@ -20,6 +20,14 @@ DEFAULT_HEADERS = {
 
 
 def _get_lifespan_context(ctx: Context) -> Any:
+    """Extract the lifespan context from MCP context.
+
+    Args:
+        ctx: The MCP context object
+
+    Returns:
+        The lifespan context dictionary or None if not available
+    """
     direct = getattr(ctx, "lifespan_context", None)
     if isinstance(direct, dict):
         return direct
@@ -35,6 +43,16 @@ def _get_lifespan_context(ctx: Context) -> Any:
 def get_http_client(
     ctx: Context, timeout: float = 15.0
 ) -> tuple[httpx.AsyncClient, bool]:
+    """Get or create an HTTP client from the MCP context.
+
+    Args:
+        ctx: The MCP context object
+        timeout: HTTP timeout in seconds
+
+    Returns:
+        A tuple of (HTTP client, should_close) where should_close indicates
+        whether the caller should close the client after use
+    """
     lifespan_ctx = _get_lifespan_context(ctx)
     if isinstance(lifespan_ctx, dict):
         client = lifespan_ctx.get("http_client")
@@ -67,6 +85,14 @@ def get_http_client(
 
 
 def _looks_like_async_client(client: object) -> bool:
+    """Check if an object looks like an async HTTP client.
+
+    Args:
+        client: The object to check
+
+    Returns:
+        True if the object has the expected HTTP client methods
+    """
     if client is None:
         return False
     return (

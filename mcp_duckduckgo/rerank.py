@@ -21,10 +21,26 @@ _INTENT_DOMAIN_BOOSTS: dict[SearchIntent, set[str]] = {
 
 
 def _normalise(text: str) -> str:
+    """Normalize text to lowercase and NFKD form.
+
+    Args:
+        text: The text to normalize
+
+    Returns:
+        Normalized lowercase text
+    """
     return unicodedata.normalize("NFKD", text).lower()
 
 
 def _tokenise(text: str) -> list[str]:
+    """Tokenize text into alphanumeric words.
+
+    Args:
+        text: The text to tokenize
+
+    Returns:
+        List of alphanumeric tokens
+    """
     cleaned = _normalise(text)
     tokens: list[str] = []
     current = []
@@ -46,6 +62,20 @@ def score_result(
     intent: SearchIntent,
     domain: str,
 ) -> float:
+    """Score a search result based on query relevance and intent.
+
+    Combines token overlap, cosine similarity, and domain-based boosting
+    to produce a relevance score for ranking.
+
+    Args:
+        query_tokens: Token counts from the search query
+        description_tokens: Token counts from the result description
+        intent: The search intent classification
+        domain: The domain of the search result
+
+    Returns:
+        A relevance score between 0 and 1+ (domain boost can exceed 1)
+    """
     intersection = sum((query_tokens & description_tokens).values())
     if not intersection:
         overlap = 0.0
@@ -72,6 +102,16 @@ def rerank_results(
     results: Iterable[dict[str, str]],
     intent: SearchIntent,
 ) -> list[dict[str, str]]:
+    """Rerank search results based on semantic relevance and intent.
+
+    Args:
+        query: The original search query
+        results: An iterable of search result dictionaries
+        intent: The classified search intent
+
+    Returns:
+        A list of reranked search results, ordered by relevance score
+    """
     query_tokens = Counter(_tokenise(query))
     if not query_tokens:
         return list(results)

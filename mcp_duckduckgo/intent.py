@@ -77,11 +77,30 @@ _INTENT_ORDER = (
 
 
 def _tokenise(query: str) -> Iterable[str]:
+    """Tokenize a query into words and phrases.
+
+    Args:
+        query: The search query to tokenize
+
+    Returns:
+        An iterable of lowercase tokens
+    """
     lowered = query.lower()
     return re.findall(r"[\w']+", lowered)
 
 
 def detect_query_intent(query: str) -> tuple[str, float]:
+    """Detect the intent of a search query using keyword matching.
+
+    Analyzes the query text to classify it into one of several intent categories:
+    news, technical, shopping, academic, finance, local, or general.
+
+    Args:
+        query: The search query text to analyze
+
+    Returns:
+        A tuple of (intent_name, confidence_score) where confidence is 0.0-1.0
+    """
     tokens = list(_tokenise(query))
     if not tokens:
         return "general", 0.0

@@ -9,9 +9,9 @@ import pytest
 from bs4 import BeautifulSoup
 
 from mcp_duckduckgo import search as search_module
+from mcp_duckduckgo.exceptions import SearchError
 from mcp_duckduckgo.http import get_http_client
 from mcp_duckduckgo.intent import detect_query_intent
-from mcp_duckduckgo.exceptions import SearchError
 from mcp_duckduckgo.search import (
     DuckDuckGoSearchError,
     duckduckgo_search,

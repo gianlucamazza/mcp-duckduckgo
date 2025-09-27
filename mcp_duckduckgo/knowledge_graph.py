@@ -15,6 +15,16 @@ logger = logging.getLogger("mcp_duckduckgo.knowledge_graph")
 
 @dataclass(frozen=True)
 class _EntityRecord:
+    """Internal entity record for knowledge graph construction.
+
+    Attributes:
+        identifier: Unique entity identifier
+        label: Human-readable entity label
+        source: Source of entity data (wikidata, synthetic, etc.)
+        score: Confidence score for the entity
+        metadata: Additional entity metadata
+    """
+
     identifier: str
     label: str
     source: str
@@ -41,10 +51,29 @@ _LOCAL_ENTITY_INDEX: dict[str, _EntityRecord] = {
 
 
 def _normalize_entity(entity: str) -> str:
+    """Normalize entity text by collapsing whitespace.
+
+    Args:
+        entity: The entity text to normalize
+
+    Returns:
+        Normalized entity text
+    """
     return " ".join(entity.split()).strip()
 
 
 def _resolve_entity(entity: str) -> _EntityRecord:
+    """Resolve an entity to its record, using cache or creating synthetic.
+
+    Args:
+        entity: The entity to resolve
+
+    Returns:
+        An entity record with identifier and metadata
+
+    Raises:
+        ValueError: If entity is blank or invalid
+    """
     normalized = _normalize_entity(entity)
     if not normalized:
         raise ValueError("Cannot resolve blank entity")
@@ -66,6 +95,14 @@ def _resolve_entity(entity: str) -> _EntityRecord:
 
 
 def _build_domain_node(domain: str) -> KnowledgeGraphNode:
+    """Build a knowledge graph node for a domain.
+
+    Args:
+        domain: The domain name to create a node for
+
+    Returns:
+        A knowledge graph node representing the domain
+    """
     pretty = domain.lower()
     return KnowledgeGraphNode(
         id=f"domain:{pretty}",
