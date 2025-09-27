@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from builtins import ExceptionGroup
+try:
+    from builtins import ExceptionGroup
+except ImportError:
+    # Python < 3.11 compatibility
+    from exceptiongroup import ExceptionGroup
 from unittest.mock import AsyncMock, patch
 
 import pytest

@@ -46,7 +46,8 @@ test = [
     "types-requests>=2.31.0",
     "hypothesis>=6.0.0",
     "pytest-benchmark>=4.0.0",
-    "memory-profiler>=0.61.0"
+    "memory-profiler>=0.61.0",
+    "exceptiongroup>=1.1.0; python_version<'3.11'"
 ]
 dev = [
     "pip>=23.2.1",

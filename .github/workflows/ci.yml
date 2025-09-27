@@ -71,7 +71,7 @@ jobs:
 
     - name: Run vulture dead code detection
       if: matrix.python-version == env.PYTHON_VERSION_DEFAULT
-      run: vulture mcp_duckduckgo/ --min-confidence 60
+      run: vulture mcp_duckduckgo/ .vulture_whitelist.py --min-confidence 60
 
     - name: Run tests with coverage
       run: pytest --cov=mcp_duckduckgo --cov-report=xml --cov-report=term --cov-fail-under=80

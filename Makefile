@@ -92,7 +92,7 @@ profile-memory:  ## Profile memory usage
 maintenance:  ## Run maintenance tasks
 	pre-commit autoupdate
 	pip-check --not-required || true
-	vulture mcp_duckduckgo/ --min-confidence 80 || true
+	vulture mcp_duckduckgo/ .vulture_whitelist.py --min-confidence 80 || true
 
 # Update dependencies
 update-deps:  ## Update development dependencies
@@ -108,7 +108,7 @@ audit:  ## Run comprehensive security audit
 
 # Dead code analysis
 dead-code:  ## Find unused code with vulture
-	vulture mcp_duckduckgo/ --min-confidence 60
+	vulture mcp_duckduckgo/ .vulture_whitelist.py --min-confidence 60
 
 ruff-fix:  ## Fix all auto-fixable Ruff issues
 	ruff check . --fix
