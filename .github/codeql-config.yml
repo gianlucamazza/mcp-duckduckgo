@@ -1,0 +1,16 @@
+name: "MCP DuckDuckGo CodeQL Config"
+
+disable-default-queries: false
+
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+paths-ignore:
+  - "tests/"
+  - ".venv/"
+  - "build/"
+  - "dist/"
+
+paths:
+  - "mcp_duckduckgo/"

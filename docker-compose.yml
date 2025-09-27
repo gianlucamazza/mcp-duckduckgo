@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Production service
+  mcp-duckduckgo:
+    build:
+      context: .
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - MCP_PORT=3000
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - mcp-network
+
+  # Development service
+  mcp-duckduckgo-dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "3001:3000"
+    environment:
+      - MCP_PORT=3000
+      - PYTHONUNBUFFERED=1
+      - DEBUG=1
+    volumes:
+      - .:/app
+      - /app/.venv  # Exclude virtual environment from mount
+    restart: unless-stopped
+    profiles:
+      - dev
+    networks:
+      - mcp-network
+
+  # Testing service
+  test-runner:
+    build:
+      context: .
+      target: development
+    command: ["make", "ci-local"]
+    volumes:
+      - .:/app
+      - /app/.venv
+    environment:
+      - PYTHONUNBUFFERED=1
+    profiles:
+      - test
+    networks:
+      - mcp-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    profiles:
+      - cache
+    networks:
+      - mcp-network
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    profiles:
+      - monitoring
+    networks:
+      - mcp-network
+
+volumes:
+  redis_data:
+  prometheus_data:
+
+networks:
+  mcp-network:
+    driver: bridge
