@@ -48,7 +48,7 @@ RUN apt-get update && apt-get install -y \
 COPY --from=builder /opt/venv /opt/venv
 
 # Create non-root user for security
-RUN groupadd -r mcp && useradd -r -g mcp mcp
+RUN groupadd -r mcp && useradd -r -g mcp -m mcp
 
 # Create application directory
 WORKDIR /app

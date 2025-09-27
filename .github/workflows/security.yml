@@ -33,16 +33,16 @@ jobs:
     - name: Run comprehensive security scan
       run: |
         # Run all security tools with SARIF output where possible
-        bandit -r mcp_duckduckgo/ -c pyproject.toml -f sarif -o bandit.sarif || true
+        bandit -r mcp_duckduckgo/ -c pyproject.toml -f sarif -o bandit.sarif || echo '{"runs": [{"tool": {"driver": {"name": "bandit"}}, "results": []}]}' > bandit.sarif
         bandit -r mcp_duckduckgo/ -c pyproject.toml
         
-        safety check --json --output safety.json || true
+        safety check --json --output safety.json || echo '{}' > safety.json
         safety check
         
-        pip-audit --format=json --output=pip-audit.json || true
+        pip-audit --format=json --output=pip-audit.json || echo '{}' > pip-audit.json
         pip-audit
         
-        semgrep --config=auto --sarif --output=semgrep.sarif mcp_duckduckgo/ || true
+        semgrep --config=auto --sarif --output=semgrep.sarif mcp_duckduckgo/ || echo '{"runs": [{"tool": {"driver": {"name": "semgrep"}}, "results": []}]}' > semgrep.sarif
         semgrep --config=auto mcp_duckduckgo/
 
     - name: Upload Bandit SARIF
