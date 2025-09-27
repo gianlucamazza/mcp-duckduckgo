@@ -1,0 +1,506 @@
+openapi: 3.0.3
+info:
+  title: MCP DuckDuckGo Search API
+  description: |
+    A comprehensive DuckDuckGo search plugin for Model Context Protocol (MCP).
+    
+    This API provides web search functionality with advanced features including:
+    - Web search with pagination and filtering
+    - Detailed content extraction from web pages
+    - Fact checking and validation
+    - Technical documentation search
+    - Location-based search
+    - Content summarization
+    
+    All endpoints follow MCP protocol standards and provide structured responses
+    suitable for AI model consumption.
+  version: 0.1.0
+  contact:
+    name: Gianluca Mazza
+    email: info@gianlucamazza.it
+    url: https://github.com/gianlucamazza/mcp-duckduckgo
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.mcp-duckduckgo.com
+    description: Production server
+
+paths:
+  /tools/duckduckgo_web_search:
+    post:
+      summary: Perform web search
+      description: Search the web using DuckDuckGo with advanced filtering options
+      operationId: duckduckgo_web_search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebSearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid request parameters
+        '500':
+          description: Internal server error
+
+  /tools/duckduckgo_get_details:
+    post:
+      summary: Get detailed page information
+      description: Extract detailed information from a specific URL
+      operationId: duckduckgo_get_details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetDetailsRequest'
+      responses:
+        '200':
+          description: Detailed page information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedResult'
+
+  /tools/fact_check:
+    post:
+      summary: Fact check a statement
+      description: Validate a statement by searching for supporting evidence
+      operationId: fact_check
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FactCheckRequest'
+      responses:
+        '200':
+          description: Fact check results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FactCheckResult'
+
+  /tools/dev_search:
+    post:
+      summary: Technical documentation search
+      description: Search for technical documentation and code examples
+      operationId: dev_search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevSearchRequest'
+      responses:
+        '200':
+          description: Technical search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /tools/location_search:
+    post:
+      summary: Location-based search
+      description: Search for location-specific information and services
+      operationId: location_search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationSearchRequest'
+      responses:
+        '200':
+          description: Location search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /tools/summarize_webpage:
+    post:
+      summary: Summarize webpage content
+      description: Generate a concise summary of a webpage's content
+      operationId: summarize_webpage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarizeRequest'
+      responses:
+        '200':
+          description: Webpage summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResult'
+
+  /health:
+    get:
+      summary: Health check
+      description: Check if the service is healthy and responsive
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    WebSearchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          maxLength: 400
+          description: Search query
+          example: "latest AI developments"
+        count:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 10
+          description: Number of results per page
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Page number
+        site:
+          type: string
+          description: Limit results to specific site
+          example: "site:github.com"
+        time_period:
+          type: string
+          enum: ["day", "week", "month", "year"]
+          description: Filter by time period
+
+    GetDetailsRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL to extract details from
+        spider_depth:
+          type: integer
+          minimum: 0
+          maximum: 3
+          default: 0
+          description: Number of links to follow
+        max_links_per_page:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 3
+        same_domain_only:
+          type: boolean
+          default: true
+
+    FactCheckRequest:
+      type: object
+      required:
+        - statement
+      properties:
+        statement:
+          type: string
+          maxLength: 500
+          description: Statement to fact check
+        min_sources:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 3
+
+    DevSearchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          maxLength: 400
+          description: Technical search query
+        language:
+          type: string
+          description: Programming language filter
+          example: "python"
+        framework:
+          type: string
+          description: Framework filter
+          example: "django"
+        site:
+          type: string
+          description: Site filter
+          example: "stackoverflow.com"
+        count:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 10
+
+    LocationSearchRequest:
+      type: object
+      required:
+        - query
+        - location
+      properties:
+        query:
+          type: string
+          maxLength: 400
+          description: What to search for
+        location:
+          type: string
+          description: Geographic location
+        service_type:
+          type: string
+          description: Type of service
+          example: "restaurants"
+        radius_km:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Search radius in kilometers
+        count:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 10
+
+    SummarizeRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL to summarize
+        max_length:
+          type: integer
+          minimum: 100
+          maximum: 2000
+          default: 500
+          description: Maximum summary length
+        extract_key_points:
+          type: boolean
+          default: true
+          description: Extract key points as bullets
+
+    SearchResult:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Result title
+        url:
+          type: string
+          format: uri
+          description: Result URL
+        description:
+          type: string
+          description: Result description
+        published_date:
+          type: string
+          format: date-time
+          nullable: true
+          description: Publication date
+
+    SearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        total_results:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        total_pages:
+          type: integer
+          minimum: 1
+        has_next:
+          type: boolean
+        has_previous:
+          type: boolean
+
+    DetailedResult:
+      type: object
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        description:
+          type: string
+        published_date:
+          type: string
+          nullable: true
+        content_snippet:
+          type: string
+          nullable: true
+        domain:
+          type: string
+          nullable: true
+        is_official:
+          type: boolean
+          nullable: true
+        author:
+          type: string
+          nullable: true
+        keywords:
+          type: array
+          items:
+            type: string
+          nullable: true
+        main_image:
+          type: string
+          format: uri
+          nullable: true
+        social_links:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+        related_links:
+          type: array
+          items:
+            type: string
+            format: uri
+          nullable: true
+        headings:
+          type: array
+          items:
+            type: string
+          nullable: true
+
+    FactCheckResult:
+      type: object
+      properties:
+        statement:
+          type: string
+        validation_result:
+          type: string
+          enum: ["Likely True", "Possibly True", "Inconclusive", "Possibly False", "Likely False"]
+        confidence_score:
+          type: integer
+          minimum: -100
+          maximum: 100
+        supporting_sources:
+          type: integer
+          minimum: 0
+        contradicting_sources:
+          type: integer
+          minimum: 0
+        neutral_sources:
+          type: integer
+          minimum: 0
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationSource'
+
+    ValidationSource:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+        description:
+          type: string
+        sentiment:
+          type: string
+          enum: ["supporting", "contradicting", "neutral"]
+
+    SummaryResult:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+        summary:
+          type: string
+        key_points:
+          type: array
+          items:
+            type: string
+          nullable: true
+        word_count:
+          type: integer
+          minimum: 0
+        content_length:
+          type: integer
+          minimum: 0
+        headings:
+          type: array
+          items:
+            type: string
+          nullable: true
+        domain:
+          type: string
+          nullable: true
+
+    Error:
+      type: object
+      properties:
+        error_type:
+          type: string
+          description: Type of error
+        message:
+          type: string
+          description: Error message
+        context:
+          type: string
+          description: Error context
+        recoverable:
+          type: boolean
+          description: Whether the error is recoverable
+        details:
+          type: object
+          description: Additional error details
+
+tags:
+  - name: search
+    description: Web search operations
+  - name: content
+    description: Content extraction and analysis
+  - name: validation
+    description: Fact checking and validation
+  - name: technical
+    description: Technical documentation search
+  - name: location
+    description: Location-based search
