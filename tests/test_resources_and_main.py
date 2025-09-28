@@ -132,10 +132,10 @@ def test_signal_handler_closes_client_and_exits(monkeypatch) -> None:
     main_module.is_shutting_down = False
     main_module.last_interrupt_time = 0
 
-    with patch("mcp_duckduckgo.main.asyncio.get_event_loop", return_value=LoopStub()):
-        with patch("mcp_duckduckgo.main.threading.Thread", ImmediateThread):
-            with patch("mcp_duckduckgo.main.os._exit") as mock_exit:
-                with patch("mcp_duckduckgo.main.time.sleep", return_value=None):
+    with patch("asyncio.get_event_loop", return_value=LoopStub()):
+        with patch("threading.Thread", ImmediateThread):
+            with patch("os._exit") as mock_exit:
+                with patch("time.sleep", return_value=None):
                     main_module.signal_handler(signal.SIGINT, None)
 
     assert close_called is True
@@ -154,12 +154,12 @@ def test_main_handles_keyboard_interrupt(monkeypatch) -> None:
     fake_mcp = MagicMock()
     fake_mcp.run.side_effect = KeyboardInterrupt
 
-    with patch("mcp_duckduckgo.main.signal.signal"):
+    with patch("signal.signal"):
         with patch("mcp_duckduckgo.main.parse_args") as mock_args:
             mock_args.return_value = types.SimpleNamespace(port=3000)
             with patch("mcp_duckduckgo.main.initialize_mcp", return_value=fake_mcp):
                 with patch(
-                    "mcp_duckduckgo.main.asyncio.get_event_loop", return_value=stub_loop
+                    "asyncio.get_event_loop", return_value=stub_loop
                 ):
                     main_module.server_module = types.SimpleNamespace(
                         close_http_client=close_http_client
@@ -174,7 +174,7 @@ def test_main_handles_keyboard_interrupt(monkeypatch) -> None:
 
 
 def test_main_propagates_unexpected_errors() -> None:
-    with patch("mcp_duckduckgo.main.signal.signal"):
+    with patch("signal.signal"):
         with patch("mcp_duckduckgo.main.parse_args") as mock_args:
             mock_args.return_value = types.SimpleNamespace(port=3000)
             with patch(
@@ -188,7 +188,7 @@ def test_main_runs_until_system_exit() -> None:
     fake_mcp = MagicMock()
     fake_mcp.run.side_effect = SystemExit
 
-    with patch("mcp_duckduckgo.main.signal.signal"):
+    with patch("signal.signal"):
         with patch("mcp_duckduckgo.main.initialize_mcp", return_value=fake_mcp):
             with pytest.raises(SystemExit):
                 main_module.main()
@@ -231,13 +231,13 @@ def test_signal_handler_with_running_loop(monkeypatch) -> None:
         asyncio.run(coro)
         return coro
 
-    with patch("mcp_duckduckgo.main.asyncio.get_event_loop", return_value=running_loop):
+    with patch("asyncio.get_event_loop", return_value=running_loop):
         with patch(
-            "mcp_duckduckgo.main.asyncio.create_task", side_effect=create_task_stub
+            "asyncio.create_task", side_effect=create_task_stub
         ):
-            with patch("mcp_duckduckgo.main.threading.Thread", ImmediateThread):
-                with patch("mcp_duckduckgo.main.os._exit") as mock_exit:
-                    with patch("mcp_duckduckgo.main.time.sleep", return_value=None):
+            with patch("threading.Thread", ImmediateThread):
+                with patch("os._exit") as mock_exit:
+                    with patch("time.sleep", return_value=None):
                         main_module.signal_handler(signal.SIGINT, None)
 
     assert running_loop.is_running_called is True
@@ -251,9 +251,9 @@ def test_signal_handler_forced_exit(monkeypatch) -> None:
     main_module.is_shutting_down = True
     main_module.last_interrupt_time = 0.1
 
-    with patch("mcp_duckduckgo.main.threading.Thread", ImmediateThread):
-        with patch("mcp_duckduckgo.main.os._exit") as mock_exit:
-            with patch("mcp_duckduckgo.main.time.sleep", return_value=None):
+    with patch("threading.Thread", ImmediateThread):
+        with patch("os._exit") as mock_exit:
+            with patch("time.sleep", return_value=None):
                 main_module.signal_handler(signal.SIGINT, None)
 
     assert any(call.args and call.args[0] == 1 for call in mock_exit.call_args_list)
