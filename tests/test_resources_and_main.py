@@ -158,9 +158,7 @@ def test_main_handles_keyboard_interrupt(monkeypatch) -> None:
         with patch("mcp_duckduckgo.main.parse_args") as mock_args:
             mock_args.return_value = types.SimpleNamespace(port=3000)
             with patch("mcp_duckduckgo.main.initialize_mcp", return_value=fake_mcp):
-                with patch(
-                    "asyncio.get_event_loop", return_value=stub_loop
-                ):
+                with patch("asyncio.get_event_loop", return_value=stub_loop):
                     main_module.server_module = types.SimpleNamespace(
                         close_http_client=close_http_client
                     )
@@ -232,9 +230,7 @@ def test_signal_handler_with_running_loop(monkeypatch) -> None:
         return coro
 
     with patch("asyncio.get_event_loop", return_value=running_loop):
-        with patch(
-            "asyncio.create_task", side_effect=create_task_stub
-        ):
+        with patch("asyncio.create_task", side_effect=create_task_stub):
             with patch("threading.Thread", ImmediateThread):
                 with patch("os._exit") as mock_exit:
                     with patch("time.sleep", return_value=None):
