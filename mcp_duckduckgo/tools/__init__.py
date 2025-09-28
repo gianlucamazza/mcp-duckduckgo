@@ -1,9 +1,16 @@
 """
 Tools for the DuckDuckGo search plugin.
-This module contains various tools for searching, summarizing, and validating information.
+This module contains various tools for searching, summarizing, validating information,
+and monitoring server health and performance.
 """
 
 # Import and re-export the tools from the original file for backward compatibility
+# Import health monitoring tools (2025 enhancement)
+from mcp_duckduckgo.tools.health import (
+    get_performance_metrics,
+    get_server_info,
+    health_check,
+)
 from mcp_duckduckgo.tools.location import location_search
 from mcp_duckduckgo.tools.research import duckduckgo_multi_hop_research
 from mcp_duckduckgo.tools.search import (
@@ -24,6 +31,9 @@ __all__ = [
     "duckduckgo_related_searches",
     "duckduckgo_web_search",
     "fact_check",
+    "get_performance_metrics",
+    "get_server_info",
+    "health_check",
     "location_search",
     "summarize_webpage",
 ]

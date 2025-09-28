@@ -33,19 +33,31 @@ This project implements a Model Context Protocol (MCP) server that provides web 
 - **Sandbox Snapshots**: Capture reproducible HTML snapshots for auditing and differential analysis
 - **Multi-hop Research**: Orchestrate search, detail enrichment, and summarization with a single tool call
 
-## Modern Python Features
+## 2025 Best Practices Implementation
 
-This codebase showcases modern Python development practices:
+This project implements cutting-edge 2025 best practices for both Docker and MCP:
 
-- **🚀 Modern Syntax**: Leverages union types (`|`), pattern matching, and enhanced error messages
-- **⚡ Fast Tooling**: Ruff for ultra-fast linting and formatting
-- **🔒 Type Safety**: Comprehensive type hints with future annotations
-- **🛡️ Security**: Integrated vulnerability scanning (bandit, safety, semgrep)
-- **🧪 Robust Testing**: Property-based testing with Hypothesis for edge cases
-- **📦 Standards Compliance**: pyproject.toml with strict dependency management
-- **🐳 Containerization**: Multi-stage Docker builds for production deployment
-- **⚙️ Automation**: GitHub Actions CI/CD with matrix testing
-- **📊 Observability**: Health checks and metrics collection ready
+### **🔐 Enhanced Security (2025)**
+- **Distroless Production Images**: Ultra-secure `gcr.io/distroless/python3` containers
+- **Resource Indicators (RFC 8707)**: MCP token mis-redemption prevention
+- **Docker Scout Integration**: Automated vulnerability scanning and SBOM generation
+- **Multi-layer Security Scanning**: Trivy + Docker Scout + comprehensive static analysis
+- **Rate Limiting & Domain Validation**: Advanced protection against abuse
+
+### **⚡ Performance & Monitoring (2025)**
+- **Real-time Health Checks**: `/health`, `/metrics`, `/info` endpoints
+- **Performance Metrics**: CPU, memory, response time, cache hit ratio tracking
+- **BuildKit Cache Optimization**: `--mount=type=cache` for faster builds
+- **Multi-platform Support**: Native ARM64 and AMD64 builds
+- **System Resource Monitoring**: psutil-based comprehensive monitoring
+
+### **🚀 Modern Development Practices**
+- **Modern Python Syntax**: Union types (`|`), pattern matching, enhanced error messages
+- **Ultra-fast Tooling**: Ruff for lightning-fast linting and formatting
+- **Comprehensive Type Safety**: Full type hints with future annotations
+- **Advanced Security Scanning**: bandit, safety, semgrep, pip-audit integration
+- **Property-based Testing**: Hypothesis for edge case discovery
+- **OCI Compliance**: Full metadata labels and image signing support
 
 ## Requirements
 
@@ -246,6 +258,52 @@ Example usage in Claude Code:
 ```text
 Run a multi-hop research workflow about "quantum networking" with 4 results and summaries up to 250 characters
 ```
+
+## **🔥 New 2025 Features**
+
+### Enhanced Security & Monitoring Tools
+
+#### Tool: `health_check`
+
+Get comprehensive server health status with enhanced security validation:
+
+```text
+Check server health status
+```
+
+Returns:
+- Overall health status (healthy/degraded/unhealthy)
+- Component-level health checks
+- Resource usage indicators
+- Security validation status
+
+#### Tool: `get_performance_metrics`
+
+Access detailed performance analytics:
+
+```text
+Show performance metrics and trends
+```
+
+Returns:
+- Request statistics and success rates
+- System resource usage (CPU, memory)
+- Cache performance analytics
+- Historical trend analysis
+
+#### Tool: `get_server_info`
+
+Get enhanced server information with security features:
+
+```text
+Show server information and capabilities
+```
+
+Returns:
+- Server version and security features
+- Uptime and configuration details
+- Enabled monitoring capabilities
+- 2025 compliance status
 
 ### Resource: `docs://search`
 

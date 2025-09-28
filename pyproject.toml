@@ -32,6 +32,7 @@ dependencies = [
     "httpx>=0.25.0",
     "beautifulsoup4>=4.12.0",
     "mcp>=1.3.0",
+    "psutil>=5.9.0",  # For system monitoring (2025 enhancement)
 ]
 
 [project.optional-dependencies]
