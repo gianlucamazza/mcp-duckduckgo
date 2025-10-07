@@ -22,4 +22,4 @@ if [ "$answer" == "y" ]; then
     echo "Package published successfully!"
 else
     echo "Publishing skipped."
-fi 
+fi

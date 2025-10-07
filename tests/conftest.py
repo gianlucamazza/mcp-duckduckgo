@@ -2,7 +2,7 @@
 Shared test fixtures and configurations for MCP DuckDuckGo plugin tests.
 """
 
-from typing import Any, Dict, List, Callable
+from typing import Any, Callable, Dict, List
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -43,50 +43,50 @@ SAMPLE_SEARCH_RESULTS = [
         "url": "https://example.com/page1",
         "description": "This is a description for Example Page 1",
         "published_date": None,
-        "domain": "example.com"
+        "domain": "example.com",
     },
     {
         "title": "Example Page 2",
         "url": "https://example.com/page2",
         "description": "This is a description for Example Page 2",
         "published_date": None,
-        "domain": "example.com"
-    }
+        "domain": "example.com",
+    },
 ]
 
 
 class MockResponse:
     """Mock for httpx.Response"""
-    
+
     def __init__(self, text: str, status_code: int = 200):
         self.text = text
         self.status_code = status_code
-    
+
     def raise_for_status(self) -> None:
         """Mock the raise_for_status method"""
         if self.status_code >= 400:
             raise httpx.HTTPStatusError(
                 message=f"HTTP Error {self.status_code}",
                 request=httpx.Request("POST", "https://lite.duckduckgo.com/lite/"),
-                response=self
+                response=self,  # type: ignore[arg-type]
             )
 
 
 class MockContext(MagicMock):
     """Mock for MCP Context"""
-    
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.lifespan_context = {"http_client": AsyncMock()}
-    
+
     async def report_progress(self, current: int, total: int) -> None:
         """Mock for report_progress method"""
         pass
-    
+
     async def error(self, message: str) -> None:
         """Mock for error method"""
         pass
-    
+
     async def info(self, message: str) -> None:
         """Mock for info method"""
         pass
@@ -116,7 +116,7 @@ def sample_search_params() -> Dict[str, Any]:
         "count": 2,
         "page": 1,
         "site": None,
-        "time_period": None
+        "time_period": None,
     }
 
 
@@ -135,9 +135,11 @@ def sample_soup() -> BeautifulSoup:
 @pytest.fixture
 def mock_search_function() -> Callable[[Dict[str, Any], Context], Dict[str, Any]]:
     """Mock for the duckduckgo_search function"""
+
     async def mock_search(params: Dict[str, Any], ctx: Context) -> Dict[str, Any]:
         return {
             "results": SAMPLE_SEARCH_RESULTS,
-            "total_results": len(SAMPLE_SEARCH_RESULTS)
+            "total_results": len(SAMPLE_SEARCH_RESULTS),
         }
-    return mock_search 
+
+    return mock_search  # type: ignore[return-value]

@@ -5,8 +5,8 @@ echo "=== MCP DuckDuckGo Test Suite ==="
 
 # Check if test dependencies are installed
 echo "Checking for test dependencies..."
-python -c "import pytest" 2>/dev/null || { 
-    echo "pytest not found. Installing test dependencies..." 
+python -c "import pytest" 2>/dev/null || {
+    echo "pytest not found. Installing test dependencies..."
     pip install -e ".[test]"
 }
 
@@ -36,4 +36,4 @@ echo "  - pytest tests/              # Run all tests"
 echo "  - pytest tests/test_models.py  # Run specific test file"
 echo "  - pytest -v                  # Run with verbose output"
 echo "  - pytest --cov=mcp_duckduckgo  # Run with coverage"
-echo "=======================" 
+echo "======================="

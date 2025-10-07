@@ -9,4 +9,4 @@ pip install -e .
 echo "Installing development dependencies..."
 pip install pytest pytest-cov black isort mypy flake8 build twine
 
-echo "Development environment setup complete!" 
+echo "Development environment setup complete!"

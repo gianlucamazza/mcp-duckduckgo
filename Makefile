@@ -42,4 +42,4 @@ help:
 	@echo "  make clean    - Clean build artifacts"
 	@echo "  make vulture  - Check for unused code with Vulture"
 	@echo "  make all      - Run install, lint, and test (default)"
-	@echo "  make help     - Show this help message" 
+	@echo "  make help     - Show this help message"

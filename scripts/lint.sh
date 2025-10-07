@@ -17,4 +17,4 @@ mypy mcp_duckduckgo
 echo "Running flake8 linter..."
 flake8 mcp_duckduckgo tests
 
-echo "Linting and formatting completed!" 
+echo "Linting and formatting completed!"

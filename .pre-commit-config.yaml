@@ -1,0 +1,52 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: mixed-line-ending
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3.10
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ["--max-line-length=160", "--extend-ignore=E203,W503"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [
+          "pydantic>=2.11.0",
+          "httpx>=0.28.0",
+          "mcp>=1.3.0",
+          "types-beautifulsoup4",
+        ]
+        args: ["--ignore-missing-imports", "--allow-untyped-defs", "--no-strict-optional"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.13.2
+    hooks:
+      - id: ruff
+        args: [
+          "--select=G,TRY,S110",         # G=logging format, TRY=try/except, S110=try-except-pass
+          "--ignore=TRY003,TRY300",      # TRY003=long messages in exceptions, TRY300=else block (optional)
+        ]

@@ -19,11 +19,11 @@ if [ ! -f "$TEST_FILE" ]; then
 fi
 
 # Check if test dependencies are installed
-python -c "import pytest" 2>/dev/null || { 
-    echo "pytest not found. Installing test dependencies..." 
-    pip install -e ".[test]"
+python -c "import pytest" 2>/dev/null || {
+    echo "pytest not found. Installing test dependencies..."
+    python -m pip install -e ".[test]"
 }
 
 # Run the specified test with verbose output
 echo "Running test: $TEST_FILE"
-python -m pytest "$TEST_FILE" -v 
+python -m pytest "$TEST_FILE" -v

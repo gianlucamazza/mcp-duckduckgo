@@ -1,246 +1,292 @@
 """
-Search functionality for the DuckDuckGo search plugin.
+Proper DuckDuckGo search implementation for MCP.
 """
 
 import logging
-from typing import Dict, Any
 import urllib.parse
+from dataclasses import dataclass
+from typing import List
 
 import httpx
-from mcp.server.fastmcp import Context
 from bs4 import BeautifulSoup
 
-# Configure logging
-logger = logging.getLogger("mcp_duckduckgo.search")
+logger = logging.getLogger(__name__)
+
+# HTTP Configuration
+DEFAULT_TIMEOUT = 15
+INSTANT_API_TIMEOUT = 10
+COMMON_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+}
+
+# DuckDuckGo Selectors
+RESULT_SELECTORS = [
+    "div.result",
+    'div[class*="result"]',
+    ".result",
+    ".web-result",
+    ".result_body",
+]
+
+TITLE_SELECTORS = [
+    "a.result__a",
+    'a[class*="result"]',
+    ".result__title a",
+    "h3 a",
+    "a",
+]
+
+SNIPPET_SELECTORS = [
+    "a.result__snippet",
+    ".result__snippet",
+    ".result__body",
+    ".snippet",
+    "p",
+]
+
+
+@dataclass
+class SearchResult:
+    title: str
+    url: str
+    description: str
+    domain: str = ""
+
 
 def extract_domain(url: str) -> str:
     """
-    Extract the domain name from a URL.
-    
+    Extract domain from URL.
+
     Args:
-        url: The URL to extract the domain from
-        
+        url: URL string to extract domain from
+
     Returns:
-        The domain name
+        Lowercase domain name or empty string if parsing fails
     """
     try:
-        parsed_url = urllib.parse.urlparse(url)
-        domain = parsed_url.netloc
-        return domain
+        parsed = urllib.parse.urlparse(url)
+        return parsed.netloc.lower()
     except Exception as e:
-        logger.error(f"Error extracting domain from URL {url}: {e}")
+        logger.debug("Failed to extract domain from URL %s: %s", url, e)
         return ""
 
-async def duckduckgo_search(params: Dict[str, Any], ctx: Context) -> Dict[str, Any]:
+
+async def search_duckduckgo_instant(
+    query: str, http_client: httpx.AsyncClient
+) -> List[SearchResult]:
     """
-    Perform a web search using DuckDuckGo API.
-    
+    Search using DuckDuckGo Instant Answer API.
+
     Args:
-        params: Dictionary containing search parameters
-        ctx: MCP context object providing access to lifespan resources
-        
+        query: Search query string
+        http_client: HTTP client to use for the request
+
     Returns:
-        Dictionary with search results
+        List of SearchResult objects from instant answers
     """
-    query = params.get("query")
-    count = params.get("count", 10)
-    offset = params.get("offset", 0)
-    page = params.get("page", 1)
-    
-    if not query:
-        logger.error("Query parameter is required")
-        raise ValueError("Query parameter is required")
-    
-    logger.info(f"Searching DuckDuckGo for: {query}")
-    
-    # We'll use the DuckDuckGo Lite API endpoint which doesn't require an API key
-    # This is for demonstration purposes. For production, consider using a proper search API
-    url = "https://lite.duckduckgo.com/lite/"
-    
-    # Create a new HTTP client if lifespan_context is not available
-    http_client = None
-    close_client = False
-    
     try:
-        # Try to get the HTTP client from the lifespan context
-        if hasattr(ctx, 'lifespan_context') and 'http_client' in ctx.lifespan_context:
-            logger.info("Using HTTP client from lifespan context")
-            http_client = ctx.lifespan_context["http_client"]
-        else:
-            # Create a new HTTP client if not available in the context
-            logger.info("Creating new HTTP client")
-            http_client = httpx.AsyncClient(
-                timeout=10.0,
-                headers={
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-                }
+        # Use DuckDuckGo's Instant Answer API
+        url = "https://api.duckduckgo.com/"
+        params = {
+            "q": query,
+            "format": "json",
+            "no_html": 1,
+            "skip_disambig": 1,
+        }
+
+        response = await http_client.get(url, params=params, timeout=INSTANT_API_TIMEOUT)  # type: ignore[arg-type]
+        response.raise_for_status()
+
+        data = response.json()
+        results = []
+
+        # Get the abstract/summary
+        if data.get("Abstract"):
+            abstract_url = data.get("AbstractURL", "")
+            results.append(
+                SearchResult(
+                    title=data.get("Heading", query),
+                    url=abstract_url,
+                    description=data.get("Abstract", ""),
+                    domain=extract_domain(abstract_url),
+                )
             )
-            close_client = True
-        
-        # Log the search operation
-        if hasattr(ctx, 'info'):
-            await ctx.info(f"Searching for: {query} (page {page})")
-        
-        response = await http_client.post(
-            url,
-            data={
-                "q": query,
-                "kl": "wt-wt",  # No region localization
-                "s": offset,  # Start index for pagination
-            },
-            timeout=10.0,
+
+        # Get related topics
+        for topic in data.get("RelatedTopics", []):
+            if isinstance(topic, dict) and topic.get("Text") and topic.get("FirstURL"):
+                topic_url = topic.get("FirstURL", "")
+                results.append(
+                    SearchResult(
+                        title=topic.get("Text", ""),
+                        url=topic_url,
+                        description=topic.get("Text", ""),
+                        domain=extract_domain(topic_url),
+                    )
+                )
+
+        return results
+
+    except Exception:
+        logger.exception("DuckDuckGo instant search failed")
+        return []
+
+
+async def search_duckduckgo_html(
+    query: str, http_client: httpx.AsyncClient, count: int = 10
+) -> List[SearchResult]:
+    """
+    Search using DuckDuckGo HTML interface as fallback.
+
+    Args:
+        query: Search query string
+        http_client: HTTP client to use for the request
+        count: Maximum number of results to return
+
+    Returns:
+        List of SearchResult objects parsed from HTML
+    """
+    try:
+        # Use DuckDuckGo's HTML interface
+        url = "https://html.duckduckgo.com/html/"
+        params = {"q": query}
+
+        response = await http_client.get(
+            url, params=params, headers=COMMON_HEADERS, timeout=DEFAULT_TIMEOUT
         )
         response.raise_for_status()
-        
-        # Log the response status and content length
-        logger.info(f"Response status: {response.status_code}, Content length: {len(response.text)}")
-        
-        # Parse the HTML response to extract search results
-        # Note: This is a simplified implementation and might break if DuckDuckGo changes their HTML structure
-        # For a production service, consider using a more robust solution
-        
+
         soup = BeautifulSoup(response.text, "html.parser")
-        
-        # Log the HTML structure to understand what we're working with
-        logger.info(f"HTML title: {soup.title.string if soup.title else 'No title'}")
-        
-        # Log all available table classes to see what's in the response
-        tables = soup.find_all("table")
-        logger.info(f"Found {len(tables)} tables in the response")
-        
-        for i, table in enumerate(tables):
-            logger.info(f"Table {i} class: {table.get('class', 'No class')}")
-        
-        # Find all result rows in the HTML
-        result_rows = soup.find_all("tr", class_="result-link")
-        result_snippets = soup.find_all("tr", class_="result-snippet")
-        
-        logger.info(f"Found {len(result_rows)} result rows and {len(result_snippets)} result snippets")
-        
-        # If we didn't find any results with the expected classes, try to find links in a different way
-        if len(result_rows) == 0:
-            logger.info("No results found with expected classes, trying alternative parsing")
-            
-            # Try to find all links in the document
-            all_links = soup.find_all("a")
-            logger.info(f"Found {len(all_links)} links in the document")
-            
-            # Log the first few links to see what we're working with
-            for i, link in enumerate(all_links[:5]):
-                logger.info(f"Link {i}: text='{link.text.strip()}', href='{link.get('href', '')}'")
-        
-        total_results = len(result_rows)
-        
-        # Report progress to the client if the method is available
-        if hasattr(ctx, 'report_progress'):
-            await ctx.report_progress(0, total_results)
-        
         results = []
-        
-        # Extract only the requested number of results starting from the offset
-        for i in range(min(count, len(result_rows))):
-            if offset + i >= len(result_rows):
+
+        # DuckDuckGo result selectors (multiple attempts for robustness)
+        result_divs: list = []
+        for selector in RESULT_SELECTORS:
+            result_divs = soup.select(selector)
+            if result_divs:
+                logger.info(
+                    "Found %d results with selector: %s", len(result_divs), selector
+                )
                 break
-                
-            title_elem = result_rows[offset + i].find("a")
-            if not title_elem:
-                continue
-                
-            title = title_elem.text.strip()
-            url = title_elem.get("href", "")
-            domain = extract_domain(url)
-            
-            description = ""
-            if offset + i < len(result_snippets):
-                description = result_snippets[offset + i].text.strip()
-            
-            # Create a dictionary directly instead of using SearchResult model
-            results.append({
-                "title": title,
-                "url": url,
-                "description": description,
-                "published_date": None,
-                "domain": domain
-            })
-            
-            # Update progress if the method is available
-            if hasattr(ctx, 'report_progress'):
-                await ctx.report_progress(i + 1, total_results)
-        
-        # If we still don't have results, try an alternative approach
-        if len(results) == 0:
-            logger.info("No results found with standard parsing, trying alternative approach")
-            
-            # Try to find results in a different way - this is a fallback approach
-            # Look for any links that might be search results
-            all_links = soup.find_all("a")
-            
-            # Filter links that look like search results (not navigation links)
-            potential_results = [link for link in all_links if link.get('href') and 
-                                 not link.get('href').startswith('#') and 
-                                 not link.get('href').startswith('/')]
-            
-            logger.info(f"Found {len(potential_results)} potential result links")
-            
-            # Take up to 'count' results
-            for i, link in enumerate(potential_results[:count]):
-                if i >= count:
-                    break
-                    
-                title = link.text.strip()
-                url = link.get('href', '')
-                domain = extract_domain(url)
-                
-                # Try to find a description - look for text in the parent or next sibling
+
+        if not result_divs:
+            logger.warning("No result divs found, trying fallback method")
+            # Fallback: look for links that might be search results
+            all_links = soup.find_all("a", href=True)
+            for link in all_links[:count]:
+                href = link.get("href", "")
+                text = link.get_text().strip()
+                if href and text and not href.startswith("#"):
+                    results.append(
+                        SearchResult(
+                            title=text,
+                            url=href,
+                            description="",
+                            domain=extract_domain(href),
+                        )
+                    )
+            return results[:count]
+
+        for i, div in enumerate(result_divs[:count]):
+            try:
+                # Multiple title/link selectors
+                title_link = None
+                for selector in TITLE_SELECTORS:
+                    title_link = div.select_one(selector)
+                    if title_link:
+                        break
+
+                if not title_link:
+                    continue
+
+                title = title_link.get_text().strip()
+                url = title_link.get("href", "")
+
+                # Extract snippet/description
                 description = ""
-                parent = link.parent
-                if parent and parent.text and len(parent.text.strip()) > len(title):
-                    description = parent.text.strip()
-                
-                if not description and link.next_sibling:
-                    description = link.next_sibling.text.strip() if hasattr(link.next_sibling, 'text') else ""
-                
-                results.append({
-                    "title": title,
-                    "url": url,
-                    "description": description,
-                    "published_date": None,
-                    "domain": domain
-                })
-            
-            total_results = len(potential_results)
-        
-        # Calculate more accurate total_results estimation
-        # DuckDuckGo doesn't provide exact total counts, but we can estimate
-        # based on pagination and number of results per page
-        estimated_total = max(total_results, offset + len(results))
-        
-        # For pagination purposes, we should always claim there are more results
-        # unless we received fewer than requested
-        if len(results) >= count:
-            estimated_total = max(estimated_total, offset + count + 1)
-        
-        return {
-            "results": results,
-            "total_results": estimated_total,
-        }
-        
-    except httpx.HTTPStatusError as e:
-        logger.error(f"HTTP error occurred: {e}")
-        if hasattr(ctx, 'error'):
-            await ctx.error(f"HTTP error: {str(e)}")
-        raise ValueError(f"HTTP error: {str(e)}")
-    except httpx.RequestError as e:
-        logger.error(f"Request error occurred: {e}")
-        if hasattr(ctx, 'error'):
-            await ctx.error(f"Request error: {str(e)}")
-        raise ValueError(f"Request error: {str(e)}")
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
-        if hasattr(ctx, 'error'):
-            await ctx.error(f"Unexpected error: {str(e)}")
-        raise ValueError(f"Unexpected error: {str(e)}")
-    finally:
-        # Close the HTTP client if we created it
-        if close_client and http_client:
-            await http_client.aclose() 
+                for selector in SNIPPET_SELECTORS:
+                    snippet_elem = div.select_one(selector)
+                    if snippet_elem:
+                        description = snippet_elem.get_text().strip()
+                        break
+
+                # Clean up URL (remove DuckDuckGo redirect)
+                if url.startswith("/l/?uddg="):
+                    try:
+                        querystr = urllib.parse.parse_qs(
+                            urllib.parse.urlparse(url).query
+                        )
+                        if "uddg" in querystr:
+                            url = querystr["uddg"][0]
+                    except Exception as e:
+                        logger.debug("Failed to parse redirect URL %s: %s", url, e)
+
+                # Skip if no valid URL or title
+                if not url or not title:
+                    continue
+
+                results.append(
+                    SearchResult(
+                        title=title,
+                        url=url,
+                        description=description,
+                        domain=extract_domain(url),
+                    )
+                )
+
+            except Exception as e:
+                logger.warning("Failed to parse result %d: %s", i, e)
+                continue
+
+        logger.info("Successfully parsed %d HTML results", len(results))
+        return results
+
+    except Exception:
+        logger.exception("DuckDuckGo HTML search failed")
+        return []
+
+
+async def search_web(
+    query: str, http_client: httpx.AsyncClient, count: int = 10
+) -> List[SearchResult]:
+    """
+    Main search function that tries multiple methods.
+
+    Args:
+        query: Search query string
+        http_client: HTTP client to use for requests
+        count: Maximum number of results to return
+
+    Returns:
+        List of unique SearchResult objects from both instant answers and HTML search
+    """
+    logger.info("Searching for: '%s' (max %d results)", query, count)
+
+    # Try instant answers first
+    instant_results = await search_duckduckgo_instant(query, http_client)
+    logger.info("Instant answers found %d results", len(instant_results))
+
+    # Always try HTML search for more comprehensive results
+    html_results = await search_duckduckgo_html(query, http_client, count)
+    logger.info("HTML search found %d results", len(html_results))
+
+    # Combine and deduplicate
+    all_results = instant_results + html_results
+
+    # Remove duplicates based on URL
+    seen_urls = set()
+    unique_results = []
+    for result in all_results:
+        if result.url and result.url not in seen_urls and result.url.startswith("http"):
+            seen_urls.add(result.url)
+            unique_results.append(result)
+            if len(unique_results) >= count:
+                break
+
+    logger.info("Returning %d unique valid results", len(unique_results))
+    return unique_results

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp_duckduckgo"
-version = "0.1.1"
+version = "0.2.0"
 description = "DuckDuckGo search plugin for Model Context Protocol"
 authors = [
     {name = "Gianluca Mazza", email = "info@gianlucamazza.it"}
@@ -59,7 +59,7 @@ mcp-duckduckgo = "mcp_duckduckgo.main:main"
 
 [tool.black]
 line-length = 88
-target-version = ["py310"]
+target-version = ["py39"]
 include = '\.pyi?$'
 
 [tool.isort]
